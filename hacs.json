@@ -1,0 +1,6 @@
+{
+  "name": "Automations Overview Card",
+  "render_readme": true,
+  "content_in_root": true,
+  "filename": "automations-overview-card.js"
+}
