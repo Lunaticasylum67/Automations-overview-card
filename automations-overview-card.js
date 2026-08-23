@@ -1,5 +1,5 @@
 
-/* Automations Overview Card - V26 */
+/* Automations Overview Card - V27 */
 /* ==========================================================
    V25 - TRADUCTIONS / TRANSLATIONS
    ========================================================== */
@@ -62,6 +62,7 @@ const AUTOMATION_TIMELINE_I18N = {
     dynamic_trigger: "d\u00e9clencheur dynamique",
     unpredictable_trigger_prefix: "D\u00e9clenchement non pr\u00e9visible : ",
     trace_executed_fallback: "Ex\u00e9cut\u00e9e",
+    now_label: "maintenant",
     legend_done_label: "Ex\u00e9cut\u00e9e",
     legend_done_desc: "Une ou plusieurs actions ont r\u00e9ellement \u00e9t\u00e9 ex\u00e9cut\u00e9es",
     legend_skipped_label: "Non remplie",
@@ -146,6 +147,7 @@ const AUTOMATION_TIMELINE_I18N = {
     dynamic_trigger: "dynamic trigger",
     unpredictable_trigger_prefix: "Unpredictable trigger: ",
     trace_executed_fallback: "Executed",
+    now_label: "now",
     legend_done_label: "Done",
     legend_done_desc: "One or more actions actually ran",
     legend_skipped_label: "Not met",
@@ -4678,7 +4680,7 @@ class AutomationsOverviewCard extends HTMLElement {
                     }
                   )}
  
-                  maintenant
+                  ${this._t("now_label")}
  
                 </b>
  
