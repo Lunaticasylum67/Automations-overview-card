@@ -72,7 +72,7 @@ Example with options:
 
 ```yaml
 type: custom:automations-overview-card
-title: Automatisations
+title: Automations Overview
 language: fr
 entity_name_mode: entity_id
 show_conditionals: true
