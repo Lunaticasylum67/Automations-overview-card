@@ -48,8 +48,10 @@ Add a card (or a view) with:
 
 ```yaml
 type: custom:automations-overview-card
-title: Automations
+title: Automations Overview
 ```
+
+(`title` can be anything you like — pick something distinctive if this card sits alongside other cards on the same dashboard.)
 
 That's it — the card automatically discovers every `automation.*` entity. Use the options below to tune it.
 
