@@ -1,5 +1,4 @@
-
-/* Automations Overview Card - V27 */
+/* Automations Overview Card - V28 */
 /* ==========================================================
    V25 - TRADUCTIONS / TRANSLATIONS
    ========================================================== */
@@ -60,6 +59,7 @@ const AUTOMATION_TIMELINE_I18N = {
     time_pattern: "Motif horaire",
     time_pattern_lower: "motif horaire",
     dynamic_trigger: "d\u00e9clencheur dynamique",
+    condition_dependent: "d\u00e9pend d\u2019une condition non v\u00e9rifiable",
     unpredictable_trigger_prefix: "D\u00e9clenchement non pr\u00e9visible : ",
     trace_executed_fallback: "Ex\u00e9cut\u00e9e",
     now_label: "maintenant",
@@ -145,6 +145,7 @@ const AUTOMATION_TIMELINE_I18N = {
     time_pattern: "Time pattern",
     time_pattern_lower: "time pattern",
     dynamic_trigger: "dynamic trigger",
+    condition_dependent: "depends on an unverifiable condition",
     unpredictable_trigger_prefix: "Unpredictable trigger: ",
     trace_executed_fallback: "Executed",
     now_label: "now",
@@ -3545,13 +3546,31 @@ class AutomationsOverviewCard extends HTMLElement {
           );
  
  
-          if (
-            this._passesSimpleWeekday(
+          const timeVerdict =
+            this._conditionVerdict(
               config,
               date
-            )
+            );
+
+
+          if (
+            timeVerdict === "uncertain"
           ) {
- 
+
+            conditional =
+              true;
+
+
+            conditionalKinds.add(
+              this._t("condition_dependent")
+            );
+          }
+
+
+          else if (
+            timeVerdict !== "blocked"
+          ) {
+
             events.push(
               this._futureEvent(
                 dt,
@@ -3610,15 +3629,41 @@ class AutomationsOverviewCard extends HTMLElement {
         );
  
  
-        events.push(
-          this._futureEvent(
-            dt,
-            state,
-            trigger.event === "sunrise"
-              ? this._t("sunrise")
-              : this._t("sunset")
-          )
-        );
+        const sunVerdict =
+          this._conditionVerdict(
+            config,
+            date
+          );
+
+
+        if (
+          sunVerdict === "uncertain"
+        ) {
+
+          conditional =
+            true;
+
+
+          conditionalKinds.add(
+            this._t("condition_dependent")
+          );
+        }
+
+
+        else if (
+          sunVerdict !== "blocked"
+        ) {
+
+          events.push(
+            this._futureEvent(
+              dt,
+              state,
+              trigger.event === "sunrise"
+                ? this._t("sunrise")
+                : this._t("sunset")
+            )
+          );
+        }
       }
  
  
@@ -3640,26 +3685,52 @@ class AutomationsOverviewCard extends HTMLElement {
         if (
           exact.length
         ) {
- 
-          exact.forEach(
-            dt =>
-              events.push(
-                this._futureEvent(
-                  dt,
-                  state,
-                  this._t("time_pattern")
+
+          const patternVerdict =
+            this._conditionVerdict(
+              config,
+              date
+            );
+
+
+          if (
+            patternVerdict === "uncertain"
+          ) {
+
+            conditional =
+              true;
+
+
+            conditionalKinds.add(
+              this._t("condition_dependent")
+            );
+          }
+
+
+          else if (
+            patternVerdict !== "blocked"
+          ) {
+
+            exact.forEach(
+              dt =>
+                events.push(
+                  this._futureEvent(
+                    dt,
+                    state,
+                    this._t("time_pattern")
+                  )
                 )
-              )
-          );
+            );
+          }
         }
- 
- 
+
+
         else {
- 
+
           conditional =
             true;
- 
- 
+
+
           conditionalKinds.add(
             this._t("time_pattern_lower")
           );
@@ -3838,44 +3909,79 @@ class AutomationsOverviewCard extends HTMLElement {
   }
  
  
-  _passesSimpleWeekday(
+  _conditionVerdict(
     config,
     date
   ) {
- 
+
     const conditions =
       config.conditions ||
       config.condition ||
       [];
- 
- 
+
+
     const list =
       Array.isArray(conditions)
         ? conditions
         : [conditions];
- 
- 
+
+
+    let uncertain =
+      false;
+
+
     for (
       const condition
       of list
     ) {
- 
+
       if (
-        condition?.condition === "time" &&
+        !condition ||
+        typeof condition !== "object"
+      ) {
+        continue;
+      }
+
+
+      if (
+        condition.condition === "time" &&
         Array.isArray(
           condition.weekday
-        ) &&
-        !condition.weekday.includes(
-          this._weekdayKey(date)
         )
       ) {
- 
-        return false;
+
+        if (
+          !condition.weekday.includes(
+            this._weekdayKey(date)
+          )
+        ) {
+
+          return "blocked";
+        }
+
+
+        if (
+          condition.after ||
+          condition.before
+        ) {
+
+          uncertain =
+            true;
+        }
+
+
+        continue;
       }
+
+
+      uncertain =
+        true;
     }
- 
- 
-    return true;
+
+
+    return uncertain
+      ? "uncertain"
+      : "ok";
   }
  
  
@@ -6545,4 +6651,3 @@ if (
       )
   });
 }
-
