@@ -1,0 +1,3006 @@
+{
+  "source": "Astral 3.2 astral.sun.dusk, UTC dates",
+  "cases": [
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-01-15",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-01-15T16:59:05.447167+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-01-15",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-01-15T17:38:11.657389+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-01-15",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-01-15T18:15:54.351379+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-03-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-20T18:36:18.088661+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-03-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-20T19:13:20.668959+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-03-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-20T19:51:47.221536+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-03-29",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-29T18:50:14.451107+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-03-29",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-29T19:28:10.953775+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-03-29",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-29T20:08:14.434158+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-06-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-06-21T20:42:43.555824+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-06-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-06-21T21:43:55.956072+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-06-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-09-19",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-19T18:28:13.021273+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-09-19",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-19T19:05:24.899750+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-09-19",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-19T19:44:12.595404+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-09-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-20T18:26:02.980457+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-09-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-20T19:03:09.606683+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-09-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-20T19:41:47.704311+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-10-25",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-10-25T17:16:16.429146+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-10-25",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-10-25T17:52:56.310116+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-10-25",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-10-25T18:29:20.999334+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-12-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-12-21T16:35:04.076457+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-12-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-12-21T17:15:16.654156+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2026-12-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-12-21T17:53:41.915420+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2030-03-31",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-03-31T18:53:24.965545+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2030-03-31",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-03-31T19:31:37.141101+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2030-03-31",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-03-31T20:12:07.807439+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2030-10-27",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-10-27T17:12:51.377998+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2030-10-27",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-10-27T17:49:37.479243+00:00"
+    },
+    {
+      "location": "Paris",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "elevation": 35,
+      "day": "2030-10-27",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-10-27T18:26:03.584580+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-01-15",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-01-15T16:59:42.491688+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-01-15",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-01-15T17:41:21.547587+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-01-15",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-01-15T18:21:17.442121+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-03-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-20T18:47:14.205118+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-03-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-20T19:26:30.706639+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-03-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-20T20:07:33.711437+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-03-29",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-29T19:02:50.819679+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-03-29",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-29T19:43:12.901372+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-03-29",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-29T20:26:17.950610+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-06-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-06-21T21:09:54.830314+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-06-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-06-21T22:24:27.862464+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-06-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-09-19",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-19T18:39:40.476812+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-09-19",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-19T19:19:08.424560+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-09-19",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-19T20:00:38.067800+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-09-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-20T18:37:19.602084+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-09-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-20T19:16:41.181465+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-09-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-20T19:57:58.812720+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-10-25",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-10-25T17:21:31.056866+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-10-25",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-10-25T18:00:17.605016+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-10-25",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-10-25T18:38:46.613809+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-12-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-12-21T16:34:10.375051+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-12-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-12-21T17:17:09.411100+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2026-12-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-12-21T17:57:54.398489+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2030-03-31",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-03-31T19:06:24.405067+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2030-03-31",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-03-31T19:47:05.623939+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2030-03-31",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-03-31T20:30:45.286277+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2030-10-27",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-10-27T17:17:46.116014+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2030-10-27",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-10-27T17:56:39.857135+00:00"
+    },
+    {
+      "location": "London",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "elevation": 0,
+      "day": "2030-10-27",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-10-27T18:35:10.135103+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-01-15",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-01-15T22:24:26.017128+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-01-15",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-01-15T22:57:59.510923+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-01-15",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-01-15T23:30:44.217942+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-03-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-20T23:36:21.455321+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-03-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-20T00:07:07.025740+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-03-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-20T00:39:37.281273+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-03-29",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-29T23:46:05.493120+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-03-29",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-29T00:17:19.421151+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-03-29",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-29T00:50:38.559822+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-06-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-06-21T01:05:01.614489+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-06-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-06-21T01:47:37.564858+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-06-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-06-21T02:38:12.092789+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-09-19",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-19T23:26:17.730565+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-09-19",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-19T23:58:13.970054+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-09-19",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-19T00:32:48.282416+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-09-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-20T23:24:35.058666+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-09-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-20T23:56:28.419892+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-09-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-20T00:30:57.226303+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-10-25",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-10-25T22:30:00.855432+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-10-25",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-10-25T23:01:51.890794+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-10-25",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-10-25T23:33:31.102797+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-12-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-12-21T22:03:44.280422+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-12-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-12-21T22:38:02.893454+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2026-12-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-12-21T23:11:20.233758+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2030-03-31",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-03-31T23:48:18.164362+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2030-03-31",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-03-31T00:19:40.408924+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2030-03-31",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-03-31T00:53:13.161534+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2030-10-27",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-10-27T22:27:25.225823+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2030-10-27",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-10-27T22:59:21.084896+00:00"
+    },
+    {
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "elevation": 10,
+      "day": "2030-10-27",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-10-27T23:31:02.431146+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-01-15",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-01-15T09:38:56.652524+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-01-15",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-01-15T10:13:23.866376+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-01-15",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-01-15T10:50:42.693016+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-03-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-20T08:33:16.461568+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-03-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-20T09:02:12.817972+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-03-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-20T09:31:33.729148+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-03-29",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-29T08:21:04.049185+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-03-29",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-29T08:49:50.674765+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-03-29",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-29T09:18:51.331079+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-06-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-06-21T07:23:08.118846+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-06-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-06-21T07:54:12.256207+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-06-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-06-21T08:24:36.505768+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-09-19",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-19T08:15:32.766766+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-09-19",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-19T08:44:26.198401+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-09-19",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-19T09:13:39.704209+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-09-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-20T08:16:14.115334+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-09-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-20T08:45:08.765562+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-09-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-20T09:14:24.675126+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-10-25",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-10-25T08:44:10.073475+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-10-25",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-10-25T09:15:08.275150+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-10-25",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-10-25T09:47:26.282909+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-12-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-12-21T09:36:19.084337+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-12-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-12-21T10:12:11.489837+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2026-12-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-12-21T10:51:39.957661+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2030-03-31",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-03-31T08:18:21.211836+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2030-03-31",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-03-31T08:47:07.031744+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2030-03-31",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-03-31T09:16:04.694202+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2030-10-27",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-10-27T08:46:04.320934+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2030-10-27",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-10-27T09:17:14.242900+00:00"
+    },
+    {
+      "location": "Sydney",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "elevation": 58,
+      "day": "2030-10-27",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-10-27T09:49:48.725391+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-01-15",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-01-15T08:20:08.223292+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-01-15",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-01-15T08:51:21.090908+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-01-15",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-01-15T09:21:57.608848+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-03-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-20T09:19:27.019590+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-03-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-20T09:49:05.246403+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-03-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-20T10:19:11.186547+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-03-29",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-29T09:27:06.312715+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-03-29",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-29T09:57:06.344527+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-03-29",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-29T10:27:47.986957+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-06-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-06-21T10:32:06.302505+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-06-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-06-21T11:09:24.112185+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-06-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-06-21T11:51:01.798631+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-09-19",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-19T09:10:10.835702+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-09-19",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-19T09:39:53.861764+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-09-19",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-19T10:10:09.812771+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-09-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-20T09:08:41.632745+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-09-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-20T09:38:22.455618+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-09-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-20T10:08:34.736180+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-10-25",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-10-25T08:21:28.953243+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-10-25",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-10-25T08:51:11.940110+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-10-25",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-10-25T09:20:45.777766+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-12-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-12-21T08:01:24.131131+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-12-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-12-21T08:33:12.896759+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2026-12-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-12-21T09:04:17.080491+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2030-03-31",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-03-31T09:28:50.575851+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2030-03-31",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-03-31T09:58:57.105065+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2030-03-31",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-03-31T10:29:48.707081+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2030-10-27",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-10-27T08:19:16.384330+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2030-10-27",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-10-27T08:49:03.534108+00:00"
+    },
+    {
+      "location": "Tokyo",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "elevation": 40,
+      "day": "2030-10-27",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-10-27T09:18:39.591970+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-01-15",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-01-15T23:56:58.819623+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-01-15",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-01-15T00:22:24.655817+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-01-15",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-01-15T00:48:18.420437+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-03-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-20T23:52:11.258123+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-03-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-20T00:16:24.503693+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-03-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-20T00:40:22.418529+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-03-29",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-29T23:49:30.157650+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-03-29",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-29T00:13:45.280621+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-03-29",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-29T00:37:45.734604+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-06-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-06-21T23:49:19.659234+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-06-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-06-21T00:15:16.437373+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-06-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-06-21T00:41:37.145157+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-09-19",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-19T23:38:31.568050+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-09-19",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-19T00:02:48.589774+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-09-19",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-19T00:26:46.961395+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-09-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-20T23:38:10.310393+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-09-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-20T00:02:26.964467+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-09-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-20T00:26:25.097589+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-10-25",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-10-25T23:29:46.839273+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-10-25",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-10-25T23:54:17.857536+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-10-25",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-10-25T00:18:53.904504+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-12-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-12-21T23:46:21.013522+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-12-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-12-21T00:12:02.220920+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2026-12-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-12-21T00:38:24.710284+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2030-03-31",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-03-31T23:48:55.042927+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2030-03-31",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-03-31T00:13:11.139486+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2030-03-31",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-03-31T00:37:12.985987+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2030-10-27",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-10-27T23:29:40.740233+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2030-10-27",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-10-27T23:54:15.935761+00:00"
+    },
+    {
+      "location": "Quito",
+      "latitude": -0.1807,
+      "longitude": -78.4678,
+      "elevation": 2850,
+      "day": "2030-10-27",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-10-27T00:18:54.641049+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-01-15",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-01-15T13:51:45.816390+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-01-15",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-01-15T15:20:31.499121+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-01-15",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-01-15T16:34:26.194941+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-03-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-20T18:02:47.491098+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-03-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-20T19:19:47.803428+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-03-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-20T21:05:11.379219+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-03-29",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-29T18:41:53.669319+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-03-29",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-29T20:10:38.518250+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-03-29",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-06-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": null
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-06-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": null
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-06-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-09-19",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-19T18:02:59.908921+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-09-19",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-19T19:22:23.809920+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-09-19",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-19T21:22:30.137580+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-09-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-20T17:58:10.306254+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-09-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-20T19:16:32.367711+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-09-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-20T21:10:08.791776+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-10-25",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-10-25T15:24:22.386907+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-10-25",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-10-25T16:34:23.879636+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-10-25",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-10-25T17:43:38.783604+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-12-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-12-21T12:54:29.105979+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-12-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-12-21T14:38:07.944624+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2026-12-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-12-21T15:56:20.261258+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2030-03-31",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-03-31T18:51:12.534647+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2030-03-31",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-03-31T20:24:15.664360+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2030-03-31",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2030-10-27",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-10-27T15:16:14.102764+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2030-10-27",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-10-27T16:26:47.581868+00:00"
+    },
+    {
+      "location": "Tromso",
+      "latitude": 69.6492,
+      "longitude": 18.9553,
+      "elevation": 0,
+      "day": "2030-10-27",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-10-27T17:35:51.709203+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-01-15",
+      "kind": "civil",
+      "depression": 6,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-01-15",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-01-15",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-03-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-20T09:06:19.026862+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-03-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-03-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-03-29",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-29T07:52:47.142209+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-03-29",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-29T10:03:14.128234+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-03-29",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-06-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-06-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-06-21T02:27:16.615806+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-06-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-06-21T05:21:11.699493+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-09-19",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-19T08:21:04.549164+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-09-19",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-19T10:58:49.362073+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-09-19",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-09-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-20T08:28:39.612375+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-09-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-20T11:15:41.305338+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-09-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-10-25",
+      "kind": "civil",
+      "depression": 6,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-10-25",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-10-25",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-12-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-12-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2026-12-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2030-03-31",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-03-31T07:37:19.754637+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2030-03-31",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-03-31T09:42:40.329339+00:00"
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2030-03-31",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2030-10-27",
+      "kind": "civil",
+      "depression": 6,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2030-10-27",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": null
+    },
+    {
+      "location": "McMurdo",
+      "latitude": -77.8419,
+      "longitude": 166.6863,
+      "elevation": 24,
+      "day": "2030-10-27",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": null
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-01-15",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-01-15T04:34:19.868160+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-01-15",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-01-15T05:01:30.275512+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-01-15",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-01-15T05:28:26.468112+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-03-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-20T05:05:00.850968+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-03-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-20T05:30:42.724270+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-03-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-20T05:56:34.677572+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-03-29",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-29T05:07:55.827986+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-03-29",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-29T05:33:47.506302+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-03-29",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-29T05:59:54.452634+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-06-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-06-21T05:41:34.846246+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-06-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-06-21T06:11:06.681376+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-06-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-06-21T06:41:52.377902+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-09-19",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-19T04:53:58.994294+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-09-19",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-19T05:19:43.070383+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-09-19",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-19T05:45:39.408558+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-09-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-20T04:53:00.791538+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-09-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-20T05:18:43.874120+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-09-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-20T05:44:38.665869+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-10-25",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-10-25T04:23:12.047334+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-10-25",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-10-25T04:49:11.564303+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-10-25",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-10-25T05:15:07.054769+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-12-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-12-21T04:19:12.413567+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-12-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-12-21T04:46:49.272287+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2026-12-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-12-21T05:14:09.157262+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2030-03-31",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-03-31T05:08:35.775305+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2030-03-31",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-03-31T05:34:30.640572+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2030-03-31",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-03-31T06:00:42.034815+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2030-10-27",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-10-27T04:21:55.366251+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2030-10-27",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-10-27T04:47:58.461951+00:00"
+    },
+    {
+      "location": "Honolulu",
+      "latitude": 21.3099,
+      "longitude": -157.8581,
+      "elevation": 5,
+      "day": "2030-10-27",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-10-27T05:13:56.785162+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-01-15",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-01-15T08:03:17.744928+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-01-15",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-01-15T08:47:34.508087+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-01-15",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-01-15T09:40:51.479431+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-03-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-20T06:27:55.329204+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-03-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-20T07:01:29.503099+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-03-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-20T07:35:57.321333+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-03-29",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-03-29T06:11:32.480967+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-03-29",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-03-29T06:44:46.635218+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-03-29",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-03-29T07:18:32.783018+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-06-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-06-21T04:48:05.878412+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-06-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-06-21T05:24:26.433859+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-06-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-06-21T05:59:30.785144+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-09-19",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-19T06:08:07.676377+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-09-19",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-19T06:41:35.092037+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-09-19",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-19T07:15:46.482197+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-09-20",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-09-20T06:09:16.567067+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-09-20",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-09-20T06:42:46.387467+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-09-20",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-09-20T07:17:02.625558+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-10-25",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-10-25T06:53:54.580913+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-10-25",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-10-25T07:31:07.667645+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-10-25",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-10-25T08:11:28.793888+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-12-21",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2026-12-21T08:05:19.133239+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-12-21",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2026-12-21T08:52:53.171042+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2026-12-21",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2026-12-21T09:53:48.896615+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2030-03-31",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-03-31T06:07:54.023471+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2030-03-31",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-03-31T06:41:05.857743+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2030-03-31",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-03-31T07:14:45.293394+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2030-10-27",
+      "kind": "civil",
+      "depression": 6,
+      "expected": "2030-10-27T06:56:47.839553+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2030-10-27",
+      "kind": "nautical",
+      "depression": 12,
+      "expected": "2030-10-27T07:34:22.661356+00:00"
+    },
+    {
+      "location": "Chatham",
+      "latitude": -43.95,
+      "longitude": -176.55,
+      "elevation": 0,
+      "day": "2030-10-27",
+      "kind": "astronomical",
+      "depression": 18,
+      "expected": "2030-10-27T08:15:19.229860+00:00"
+    }
+  ]
+}
+

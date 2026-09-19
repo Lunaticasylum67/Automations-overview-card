@@ -1,4 +1,5 @@
-/* Automations Overview Card - V28 */
+
+/* Automations Overview Card - V31 - issues #1 and #2 */
 /* ==========================================================
    V25 - TRADUCTIONS / TRANSLATIONS
    ========================================================== */
@@ -51,6 +52,11 @@ const AUTOMATION_TIMELINE_I18N = {
     humanize_fallback: "Action ex\u00e9cut\u00e9e",
     dynamic_time: "heure dynamique",
     schedule_dynamic: "Horaire dynamique",
+    dusk_civil: "Cr\u00e9puscule civil",
+    dusk_nautical: "Cr\u00e9puscule nautique",
+    dusk_astronomical: "Cr\u00e9puscule astronomique",
+    schedule_start: "D\u00e9but du planning",
+    schedule_end: "Fin du planning",
     schedule: "Horaire",
     sunrise_lower: "lever du soleil",
     sunset_lower: "coucher du soleil",
@@ -137,6 +143,11 @@ const AUTOMATION_TIMELINE_I18N = {
     humanize_fallback: "Action executed",
     dynamic_time: "dynamic time",
     schedule_dynamic: "Dynamic schedule",
+    dusk_civil: "Civil dusk",
+    dusk_nautical: "Nautical dusk",
+    dusk_astronomical: "Astronomical dusk",
+    schedule_start: "Schedule start",
+    schedule_end: "Schedule end",
     schedule: "Schedule",
     sunrise_lower: "sunrise",
     sunset_lower: "sunset",
@@ -248,6 +259,9 @@ class AutomationsOverviewCard extends HTMLElement {
  
  
   set hass(hass) {
+    const inputs = this._predictionInputs(hass);
+    const inputsChanged = this._predictionInputKey !== inputs;
+    this._predictionInputKey = inputs;
     this._hass = hass;
  
     if (!this.shadowRoot.childNodes.length) {
@@ -256,7 +270,7 @@ class AutomationsOverviewCard extends HTMLElement {
  
     const key = this._dateKey(this._targetDate());
  
-    if (this._loadedFor !== key) {
+    if (this._loadedFor !== key || inputsChanged) {
       this._loadedFor = key;
       this._load();
     }
@@ -415,6 +429,29 @@ class AutomationsOverviewCard extends HTMLElement {
      ========================================================== */
  
   async _load() {
+    // Serialize refreshes: state changes during an API call request one rerun.
+    if (this._loadTask) {
+      this._loadAgain = true;
+      return this._loadTask;
+    }
+    this._loadTask = Promise.resolve().then(async () => {
+      do {
+        this._loadAgain = false;
+        this._loadedFor = this._dateKey(this._targetDate());
+        try {
+          await this._loadData();
+        } catch (error) {
+          console.error("Automation Timeline : chargement impossible", error);
+          this._loadedFor = null;
+          this._loading = false;
+          this._render();
+        }
+      } while (this._loadAgain);
+    }).finally(() => { this._loadTask = null; });
+    return this._loadTask;
+  }
+
+  async _loadData() {
     this._loading = true;
     this._render();
 
@@ -425,7 +462,7 @@ class AutomationsOverviewCard extends HTMLElement {
      * _ensureDeviceRegistry() / _resolveEntityFromDevice().
      * Doit être prêt avant le formatage des actions ci-dessous.
      */
-    await this._ensureDeviceRegistry();
+    await Promise.all([this._ensureDeviceRegistry(), this._loadSchedules()]);
 
     const date = this._targetDate();
     const { start, end } = this._startEnd(date);
@@ -787,6 +824,9 @@ class AutomationsOverviewCard extends HTMLElement {
     );
  
  
+    // Do not briefly publish results calculated before a newer state/day change.
+    if (this._loadAgain) return;
+
     this._events =
       this._mergeEvents(events);
  
@@ -3459,316 +3499,310 @@ class AutomationsOverviewCard extends HTMLElement {
      PREVISIONS
      ========================================================== */
  
-  _predict(
-    config,
-    date,
-    state
-  ) {
- 
-    const triggers =
-      config.triggers ||
-      config.trigger ||
-      [];
- 
- 
-    const list =
-      Array.isArray(triggers)
-        ? triggers
-        : [triggers];
- 
- 
-    const events =
-      [];
- 
- 
-    let conditional =
-      false;
- 
- 
-    const conditionalKinds =
-      new Set();
- 
- 
-    for (
-      const trigger
-      of list
-    ) {
- 
-      const kind =
-        trigger.trigger ||
-        trigger.platform;
- 
- 
-      /*
-       * TIME
-       */
- 
-      if (
-        kind === "time"
-      ) {
- 
-        const ats =
-          Array.isArray(trigger.at)
-            ? trigger.at
-            : [trigger.at];
- 
- 
-        for (const at of ats) {
- 
-          const resolved =
-            this._resolveTime(at);
- 
- 
-          if (!resolved) {
- 
-            conditional =
-              true;
- 
- 
-            conditionalKinds.add(
-              this._t("dynamic_time")
-            );
- 
- 
-            continue;
+  // Schedule definitions come from the read-only get_schedule action, not
+  // next_event (which describes only one boundary, not the whole week).
+  async _loadSchedules() {
+    this._schedules = {};
+    const ids = Object.keys(this._hass.states).filter(id => id.startsWith("schedule."));
+    for (let i = 0; i < ids.length; i += 8) {
+      await Promise.all(ids.slice(i, i + 8).map(async id => {
+        try {
+          const result = await this._hass.callWS({
+            type: "call_service", domain: "schedule", service: "get_schedule",
+            target: { entity_id: id }, return_response: true
+          });
+          const schedule = result?.response?.[id];
+          const days = this._scheduleDays();
+          if (schedule && days.every(day => Array.isArray(schedule[day]) &&
+            schedule[day].every(block => {
+              const from = this._clockSeconds(block.from);
+              const to = this._clockSeconds(block.to);
+              return from !== null && to !== null && from < to;
+            }))) {
+            this._schedules[id] = schedule;
           }
- 
- 
-          const dt =
-            new Date(date);
- 
- 
-          dt.setHours(
-            resolved.hour,
-            resolved.minute,
-            resolved.second,
-            0
-          );
- 
- 
-          const timeVerdict =
-            this._conditionVerdict(
-              config,
-              date
-            );
-
-
-          if (
-            timeVerdict === "uncertain"
-          ) {
-
-            conditional =
-              true;
-
-
-            conditionalKinds.add(
-              this._t("condition_dependent")
-            );
-          }
-
-
-          else if (
-            timeVerdict !== "blocked"
-          ) {
-
-            events.push(
-              this._futureEvent(
-                dt,
-                state,
-                resolved.dynamic
-                  ? this._t("schedule_dynamic")
-                  : this._t("schedule")
-              )
-            );
-          }
+        } catch (error) {
+          // A missing/unsupported service or permission failure is uncertainty,
+          // never proof that a schedule is empty or inactive.
+          console.debug("Automation Timeline : planning inaccessible", id, error);
         }
-      }
- 
- 
-      /*
-       * SUN
-       */
- 
-      else if (
-        kind === "sun"
-      ) {
- 
-        const base =
-          this._sunForDate(
-            date,
-            trigger.event
-          );
- 
- 
-        if (!base) {
- 
-          conditional =
-            true;
- 
- 
-          conditionalKinds.add(
-            trigger.event === "sunrise"
-              ? this._t("sunrise_lower")
-              : this._t("sunset_lower")
-          );
- 
- 
-          continue;
-        }
- 
- 
-        const dt =
-          new Date(base);
- 
- 
-        dt.setTime(
-          dt.getTime() +
-          this._parseOffset(
-            trigger.offset
-          )
-        );
- 
- 
-        const sunVerdict =
-          this._conditionVerdict(
-            config,
-            date
-          );
+      }));
+    }
+  }
 
+  _predictionInputs(hass) {
+    return JSON.stringify([
+      hass.config?.time_zone, hass.config?.latitude, hass.config?.longitude, hass.config?.elevation,
+      hass.states["sun.sun"]?.state, hass.states["sun.sun"]?.attributes?.next_dusk,
+      Object.keys(hass.states).filter(id => /^(input_boolean|schedule)\./.test(id))
+        .sort().map(id => [id, hass.states[id].state, hass.states[id].attributes])
+    ]);
+  }
 
-        if (
-          sunVerdict === "uncertain"
-        ) {
+  _scheduleDays() {
+    return ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  }
 
-          conditional =
-            true;
+  _clockSeconds(value) {
+    if (typeof value !== "string") return null;
+    const match = /^(\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?$/.exec(value);
+    if (!match) return null;
+    const [, h, m, s = "0"] = match;
+    if (+h > 24 || +m > 59 || +s > 59 || (+h === 24 && (+m || +s))) return null;
+    return +h * 3600 + +m * 60 + +s;
+  }
 
+  _haParts(date) {
+    const zone = this._hass.config?.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (this._partsZone !== zone) {
+      this._partsZone = zone;
+      this._partsFormatter = new Intl.DateTimeFormat("en-GB", {
+        timeZone: zone, year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23"
+      });
+    }
+    const parts = {};
+    for (const part of this._partsFormatter.formatToParts(date)) {
+      if (part.type !== "literal") parts[part.type] = Number(part.value);
+    }
+    return parts;
+  }
 
-          conditionalKinds.add(
-            this._t("condition_dependent")
-          );
-        }
-
-
-        else if (
-          sunVerdict !== "blocked"
-        ) {
-
-          events.push(
-            this._futureEvent(
-              dt,
-              state,
-              trigger.event === "sunrise"
-                ? this._t("sunrise")
-                : this._t("sunset")
-            )
-          );
-        }
-      }
- 
- 
-      /*
-       * TIME PATTERN
-       */
- 
-      else if (
-        kind === "time_pattern"
-      ) {
- 
-        const exact =
-          this._exactTimePattern(
-            trigger,
-            date
-          );
- 
- 
-        if (
-          exact.length
-        ) {
-
-          const patternVerdict =
-            this._conditionVerdict(
-              config,
-              date
-            );
-
-
-          if (
-            patternVerdict === "uncertain"
-          ) {
-
-            conditional =
-              true;
-
-
-            conditionalKinds.add(
-              this._t("condition_dependent")
-            );
-          }
-
-
-          else if (
-            patternVerdict !== "blocked"
-          ) {
-
-            exact.forEach(
-              dt =>
-                events.push(
-                  this._futureEvent(
-                    dt,
-                    state,
-                    this._t("time_pattern")
-                  )
-                )
-            );
-          }
-        }
-
-
-        else {
-
-          conditional =
-            true;
-
-
-          conditionalKinds.add(
-            this._t("time_pattern_lower")
-          );
-        }
-      }
- 
- 
-      /*
-       * NON PREVISIBLE
-       */
- 
-      else {
- 
-        conditional =
-          true;
- 
- 
-        conditionalKinds.add(
-          kind ||
-          this._t("dynamic_trigger")
-        );
+  _haWallTime(day, seconds) {
+    const wall = Date.UTC(day.year, day.month - 1, day.day, 0, 0, seconds);
+    const matches = new Set();
+    // Probe both sides of a DST transition. Missing wall times stay uncertain;
+    // an ambiguous wall time uses its first occurrence, as a schedule does.
+    for (const delta of [-36, 0, 36]) {
+      const probe = wall + delta * 3600000;
+      const p = this._haParts(new Date(probe));
+      const offset = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - probe;
+      const candidate = wall - offset;
+      const c = this._haParts(new Date(candidate));
+      if (Date.UTC(c.year, c.month - 1, c.day, c.hour, c.minute, c.second) === wall) {
+        matches.add(candidate);
       }
     }
- 
- 
+    return matches.size ? new Date(Math.min(...matches)) : null;
+  }
+
+  _scheduleStateAt(id, date) {
+    const schedule = this._schedules?.[id];
+    const current = this._hass.states[id]?.state;
+    if (!schedule || !["on", "off"].includes(current)) return null;
+    const p = this._haParts(date);
+    const day = new Date(Date.UTC(p.year, p.month - 1, p.day)).getUTCDay();
+    // Compare instants rather than wall-clock strings at the autumn DST fold.
+    for (const block of schedule[this._scheduleDays()[day]]) {
+      const start = this._haWallTime(p, this._clockSeconds(block.from));
+      const end = this._haWallTime(p, this._clockSeconds(block.to));
+      if (!start || !end) return null;
+      if (date >= start && date < end) return "on";
+    }
+    return "off";
+  }
+
+  _haTimesOnDisplayedDay(date, seconds) {
+    const { start, end } = this._startEnd(date);
+    const base = this._haParts(start);
+    const times = [];
+    for (let offset = 0; offset <= 1; offset++) {
+      const day = new Date(Date.UTC(base.year, base.month - 1, base.day + offset));
+      const dt = this._haWallTime({ year: day.getUTCFullYear(), month: day.getUTCMonth() + 1, day: day.getUTCDate() }, seconds);
+      if (!dt) return null;
+      if (dt >= start && dt < end) times.push(dt);
+    }
+    return times;
+  }
+
+  _zeroDuration(duration) {
+    if (duration == null || duration === 0 || duration === "00:00:00") return true;
+    return typeof duration === "object" && !Array.isArray(duration) &&
+      Object.keys(duration).every(key => ["days", "hours", "minutes", "seconds", "milliseconds"].includes(key) && duration[key] === 0);
+  }
+
+  _scheduleTriggerTimes(trigger, date) {
+    const kind = trigger.trigger || trigger.platform;
+    const native = kind === "schedule.block_started" || kind === "schedule.block_ended";
+    const target = trigger.target || {};
+    const rawIds = native ? target.entity_id : trigger.entity_id;
+    const ids = rawIds == null ? [] : [].concat(rawIds);
+    const options = trigger.options || {};
+    const duration = native ? options.for : trigger.for;
+    // Complex targets/durations remain conditional instead of being guessed.
+    if (!ids.length || (native && Object.keys(target).some(key => key !== "entity_id")) ||
+        (native && options.behavior && options.behavior !== "each") ||
+        !this._zeroDuration(duration) ||
+        trigger.attribute || trigger.not_from || trigger.not_to) return null;
+    const from = trigger.from == null ? null : [].concat(trigger.from);
+    const to = trigger.to == null ? null : [].concat(trigger.to);
+    if (!native && ((!from && !to) || [from, to].some(values =>
+      values && values.some(value => !["on", "off"].includes(value))))) return null;
+
+    const { start, end } = this._startEnd(date);
+    const base = this._haParts(start);
+    const events = [];
+    let uncertain = false;
+    for (const id of ids) {
+      if (typeof id !== "string" || !id.startsWith("schedule.") ||
+          !this._schedules?.[id] || !["on", "off"].includes(this._hass.states[id]?.state)) {
+        uncertain = true;
+        continue;
+      }
+      const boundaries = new Map();
+      // Cover the displayed browser day even when HA uses another time zone,
+      // including a previous day's 24:00 boundary.
+      for (let offset = -1; offset <= 2; offset++) {
+        const day = new Date(Date.UTC(base.year, base.month - 1, base.day + offset));
+        const p = { year: day.getUTCFullYear(), month: day.getUTCMonth() + 1, day: day.getUTCDate() };
+        const blocks = this._schedules[id][this._scheduleDays()[day.getUTCDay()]];
+        for (const block of blocks) {
+          for (const field of ["from", "to"]) {
+            const dt = this._haWallTime(p, this._clockSeconds(block[field]));
+            if (!dt) { uncertain = true; continue; }
+            if (dt >= start && dt < end) {
+              const entry = boundaries.get(+dt) || { time: dt, starts: false };
+              entry.starts ||= field === "from";
+              boundaries.set(+dt, entry);
+            }
+          }
+        }
+      }
+      for (const entry of boundaries.values()) {
+        const before = this._scheduleStateAt(id, new Date(+entry.time - 1));
+        const after = this._scheduleStateAt(id, entry.time);
+        if (before === null || after === null) { uncertain = true; continue; }
+        const fires = native
+          ? (kind === "schedule.block_started" ? entry.starts && after === "on" : before === "on" && after === "off")
+          : before !== after && (!from || from.includes(before)) && (!to || to.includes(after));
+        if (fires) events.push({ time: entry.time, entity_id: id, state: after });
+      }
+    }
+    return { events, uncertain };
+  }
+
+  _combineVerdicts(values, mode = "and") {
+    if (mode === "or") {
+      return values.includes("ok") ? "ok" : values.includes("uncertain") ? "uncertain" : "blocked";
+    }
+    return values.includes("blocked") ? "blocked" : values.includes("uncertain") ? "uncertain" : "ok";
+  }
+
+  _conditionVerdict(config, date, triggerId) {
+    const conditions = config.conditions ?? config.condition ?? [];
+    return this._combineVerdicts([].concat(conditions).map(condition =>
+      this._oneConditionVerdict(condition, date, triggerId)));
+  }
+
+  _oneConditionVerdict(condition, date, triggerId) {
+    if (!condition || typeof condition !== "object") return "uncertain";
+    if (condition.enabled === false) return "ok";
+    let kind = condition.condition;
+    // HA also accepts shorthand {or: [...]}, {and: [...]}, {not: [...]}.
+    if (!kind) kind = ["and", "or", "not"].find(key => key in condition);
+    if (["and", "or", "not"].includes(kind)) {
+      const children = condition.conditions ?? condition[kind];
+      if (children == null) return "uncertain";
+      const values = [].concat(children).map(child => this._oneConditionVerdict(child, date, triggerId));
+      const result = this._combineVerdicts(values, kind === "not" ? "or" : kind);
+      return kind === "not" ? ({ ok: "blocked", blocked: "ok", uncertain: "uncertain" })[result] : result;
+    }
+    if (kind === "trigger") {
+      if (triggerId === undefined) return "uncertain";
+      return [].concat(condition.id ?? []).map(String).includes(String(triggerId)) ? "ok" : "blocked";
+    }
+    if (kind === "time") {
+      if (!date) return "uncertain";
+      const p = this._haParts(date);
+      const weekday = this._scheduleDays()[new Date(Date.UTC(p.year, p.month - 1, p.day)).getUTCDay()].slice(0, 3);
+      if (condition.weekday && ![].concat(condition.weekday).includes(weekday)) return "blocked";
+      const after = condition.after === undefined ? 0 : this._clockSeconds(condition.after);
+      const before = condition.before === undefined ? 86400 : this._clockSeconds(condition.before);
+      if (after === null || before === null) return "uncertain";
+      const seconds = p.hour * 3600 + p.minute * 60 + p.second;
+      const passes = after <= before ? seconds >= after && seconds < before : seconds >= after || seconds < before;
+      return passes ? "ok" : "blocked";
+    }
+    const native = kind === "schedule.is_on" || kind === "schedule.is_off";
+    if (kind !== "state" && !native) return "uncertain";
+    if (condition.attribute || !this._zeroDuration(condition.for) || !this._zeroDuration(condition.options?.for)) return "uncertain";
+    if (native && Object.keys(condition.target || {}).some(key => key !== "entity_id")) return "uncertain";
+    const ids = [].concat((native ? condition.target?.entity_id : condition.entity_id) ?? []);
+    const wanted = native ? [kind === "schedule.is_on" ? "on" : "off"] : [].concat(condition.state ?? []);
+    if (!ids.length || !wanted.length || wanted.some(value => typeof value !== "string" || /\{[{%]/.test(value))) return "uncertain";
+    const values = ids.map(id => {
+      if (typeof id !== "string") return "uncertain";
+      let actual;
+      if (id.startsWith("schedule.")) actual = date ? this._scheduleStateAt(id, date) : null;
+      else if (id.startsWith("input_boolean.")) actual = this._hass.states[id]?.state;
+      else return "uncertain"; // Do not extrapolate arbitrary sensor states.
+      if (!["on", "off"].includes(actual)) return "uncertain";
+      return wanted.includes(actual) ? "ok" : "blocked";
+    });
+    const behavior = native ? condition.options?.behavior || "all" : condition.match || "all";
+    if (!["all", "any"].includes(behavior)) return "uncertain";
+    return this._combineVerdicts(values, behavior === "any" ? "or" : "and");
+  }
+
+  _predict(config, date, state) {
+    const triggers = [].concat(config.triggers ?? config.trigger ?? []);
+    const events = [];
+    const uncertain = new Set();
+    const add = (time, detail, triggerId) => {
+      const verdict = this._conditionVerdict(config, time, triggerId);
+      if (verdict === "ok") events.push(this._futureEvent(time, state, detail));
+      else if (verdict === "uncertain") uncertain.add(this._t("condition_dependent"));
+    };
+    triggers.forEach((trigger, index) => {
+      if (!trigger || trigger.enabled === false) return;
+      const kind = trigger.trigger || trigger.platform;
+      const triggerId = trigger.id ?? String(index);
+      // A false current boolean gate blocks even an otherwise unknown trigger.
+      // Time/schedule conditions cannot be decided without a trigger instant.
+      if (this._conditionVerdict(config, null, triggerId) === "blocked") return;
+      if (kind === "time") {
+        for (const at of [].concat(trigger.at ?? [])) {
+          const resolved = this._resolveTime(at);
+          if (!resolved) { uncertain.add(this._t("dynamic_time")); continue; }
+          const times = this._haTimesOnDisplayedDay(date, resolved.hour * 3600 + resolved.minute * 60 + resolved.second);
+          if (!times) uncertain.add(this._t("dynamic_time"));
+          for (const dt of times || []) add(dt, this._t(resolved.dynamic ? "schedule_dynamic" : "schedule"), triggerId);
+        }
+      } else if (kind === "sun.dusk") {
+        const prediction = this._duskPrediction(trigger, date);
+        if (!prediction) { uncertain.add("sun.dusk"); return; }
+        prediction.times.forEach(dt => add(dt, this._t("dusk_" + prediction.type), triggerId));
+      } else if (kind === "sun") {
+        const base = this._sunForDate(date, trigger.event);
+        if (!base) { uncertain.add(trigger.event || "sun"); return; }
+        add(new Date(+base + this._parseOffset(trigger.offset)),
+          this._t(trigger.event === "sunrise" ? "sunrise" : "sunset"), triggerId);
+      } else if (kind === "time_pattern") {
+        const exact = this._exactTimePattern(trigger, date);
+        if (!exact.length) uncertain.add(this._t("time_pattern_lower"));
+        for (const dt of exact) {
+          const times = this._haTimesOnDisplayedDay(date, dt.getHours() * 3600 + dt.getMinutes() * 60 + dt.getSeconds());
+          if (!times) uncertain.add(this._t("time_pattern_lower"));
+          for (const time of times || []) add(time, this._t("time_pattern"), triggerId);
+        }
+      } else if (kind === "state" || kind === "schedule.block_started" || kind === "schedule.block_ended") {
+        const prediction = this._scheduleTriggerTimes(trigger, date);
+        if (!prediction || prediction.uncertain) uncertain.add(kind);
+        for (const event of prediction?.events || []) {
+          const label = this._entityDisplayName(event.entity_id);
+          add(event.time, this._t(event.state === "on" ? "schedule_start" : "schedule_end") + " : " + label, triggerId);
+        }
+      } else {
+        uncertain.add(kind || this._t("dynamic_trigger"));
+      }
+    });
     return {
- 
-      events,
- 
-      conditional,
- 
-      conditionalDetail:
-        this._t("unpredictable_trigger_prefix") +
-        [...conditionalKinds].join(", ")
+      events, conditional: uncertain.size > 0,
+      conditionalDetail: this._t("unpredictable_trigger_prefix") + [...uncertain].join(", ")
     };
   }
- 
- 
+
+
   _resolveTime(at) {
  
     if (
@@ -3909,86 +3943,138 @@ class AutomationsOverviewCard extends HTMLElement {
   }
  
  
-  _conditionVerdict(
-    config,
-    date
-  ) {
-
-    const conditions =
-      config.conditions ||
-      config.condition ||
-      [];
-
-
-    const list =
-      Array.isArray(conditions)
-        ? conditions
-        : [conditions];
-
-
-    let uncertain =
-      false;
-
-
-    for (
-      const condition
-      of list
-    ) {
-
-      if (
-        !condition ||
-        typeof condition !== "object"
-      ) {
-        continue;
-      }
-
-
-      if (
-        condition.condition === "time" &&
-        Array.isArray(
-          condition.weekday
-        )
-      ) {
-
-        if (
-          !condition.weekday.includes(
-            this._weekdayKey(date)
-          )
-        ) {
-
-          return "blocked";
-        }
-
-
-        if (
-          condition.after ||
-          condition.before
-        ) {
-
-          uncertain =
-            true;
-        }
-
-
-        continue;
-      }
-
-
-      uncertain =
-        true;
-    }
-
-
-    return uncertain
-      ? "uncertain"
-      : "ok";
-  }
- 
- 
   /* ==========================================================
      SOLEIL
      ========================================================== */
  
+  _solarOffsetMilliseconds(value) {
+    if (value === undefined) return 0;
+    if (typeof value === "number") return Number.isFinite(value) ? value * 1000 : null;
+    if (typeof value === "string") {
+      const match = /^([+-]?)(\d+):(\d{2})(?::(\d{2}(?:\.\d+)?))?$/.exec(value.trim());
+      if (!match || +match[3] > 59 || +(match[4] || 0) >= 60) return null;
+      return (match[1] === "-" ? -1 : 1) * (+match[2] * 3600 + +match[3] * 60 + +(match[4] || 0)) * 1000;
+    }
+    if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+    const units = { days: 86400000, hours: 3600000, minutes: 60000, seconds: 1000, milliseconds: 1 };
+    let total = 0;
+    for (const [key, amount] of Object.entries(value)) {
+      if (!Object.hasOwn(units, key) || typeof amount !== "number" || !Number.isFinite(amount)) return null;
+      total += units[key] * amount;
+    }
+    return Number.isFinite(total) ? total : null;
+  }
+
+  _solarObserver() {
+    const { latitude, longitude, elevation = 0 } = this._hass.config || {};
+    if (![latitude, longitude, elevation].every(value => typeof value === "number" && Number.isFinite(value)) ||
+        Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return null;
+    return { latitude, longitude, elevation };
+  }
+
+  _duskPrediction(trigger, date) {
+    const options = trigger.options || {};
+    const type = options.type ?? "civil";
+    const depressions = { civil: 6, nautical: 12, astronomical: 18 };
+    if (!Object.hasOwn(depressions, type)) return null;
+    const rawOffset = this._solarOffsetMilliseconds(options.offset);
+    const direction = options.offset_type ?? "before";
+    if (rawOffset === null || !["before", "after"].includes(direction)) return null;
+    const offset = direction === "before" ? -rawOffset : rawOffset;
+    const { start, end } = this._startEnd(date);
+    const sourceStart = +start - offset;
+    const sourceEnd = +end - offset;
+    if (![sourceStart, sourceEnd].every(value => Number.isFinite(value) && Math.abs(value) < 8.64e15 - 86400000)) return null;
+    const observer = this._solarObserver();
+    const sun = this._hass.states["sun.sun"];
+    const rawDusk = sun?.attributes?.next_dusk;
+    const nextDusk = typeof rawDusk === "string" ? new Date(rawDusk) : null;
+    const usableNextDusk = nextDusk && Number.isFinite(+nextDusk) &&
+      !["unknown", "unavailable"].includes(sun.state) && type === "civil";
+    if (!observer) {
+      // next_dusk is the next CIVIL dusk only. It cannot be moved forward by
+      // 24 hours or reused for nautical/astronomical twilight.
+      return usableNextDusk && +nextDusk >= sourceStart && +nextDusk < sourceEnd
+        ? { times: [new Date(+nextDusk + offset)], type } : null;
+    }
+    const times = [];
+    // Shift the search window BEFORE choosing the solar date: an offset can
+    // move an event across midnight, across DST, or by several whole days.
+    let day = new Date(sourceStart);
+    day.setUTCHours(0, 0, 0, 0);
+    for (; +day < sourceEnd; day = new Date(+day + 86400000)) {
+      let dusk = this._astralDuskUTC(day, observer, depressions[type]);
+      if (usableNextDusk && nextDusk.toISOString().slice(0, 10) === day.toISOString().slice(0, 10)) dusk = nextDusk;
+      if (dusk && +dusk >= sourceStart && +dusk < sourceEnd) times.push(new Date(+dusk + offset));
+    }
+    return { times, type };
+  }
+
+  /*
+   * The following three astronomy methods are adapted from Astral 3.2:
+   * https://github.com/sffjunkie/astral (astral/sun.py and astral/__init__.py).
+   * Copyright 2009-2021 Simon Kennedy, sffjunkie+code@gmail.com.
+   * Licensed under Apache-2.0; the full license is included at the end of
+   * this file. Modifications: JavaScript port limited to evening twilight,
+   * merged coefficient calculations, null results instead of ValueError.
+   */
+  _astralSolarTerms(century) {
+    const rad = Math.PI / 180;
+    const t = century;
+    const longitude = ((280.46646 + t * (36000.76983 + 0.0003032 * t)) % 360 + 360) % 360;
+    const anomaly = (357.52911 + t * (35999.05029 - 0.0001537 * t)) * rad;
+    const eccentricity = 0.016708634 - t * (0.000042037 + 0.0000001267 * t);
+    const center = Math.sin(anomaly) * (1.914602 - t * (0.004817 + 0.000014 * t)) +
+      Math.sin(2 * anomaly) * (0.019993 - 0.000101 * t) + Math.sin(3 * anomaly) * 0.000289;
+    const omega = (125.04 - 1934.136 * t) * rad;
+    const apparent = (longitude + center - 0.00569 - 0.00478 * Math.sin(omega)) * rad;
+    const obliquity = (23 + (26 + (21.448 - t * (46.815 + t * (0.00059 - t * 0.001813))) / 60) / 60 +
+      0.00256 * Math.cos(omega)) * rad;
+    const declination = Math.asin(Math.sin(obliquity) * Math.sin(apparent));
+    const y = Math.tan(obliquity / 2) ** 2;
+    const l = longitude * rad;
+    const equation = 4 / rad * (y * Math.sin(2 * l) - 2 * eccentricity * Math.sin(anomaly) +
+      4 * eccentricity * y * Math.sin(anomaly) * Math.cos(2 * l) -
+      0.5 * y * y * Math.sin(4 * l) - 1.25 * eccentricity * eccentricity * Math.sin(2 * anomaly));
+    return { declination, equation };
+  }
+
+  _astralDuskTransit(day, observer, depression) {
+    const rad = Math.PI / 180;
+    const latitude = Math.max(-89.8, Math.min(89.8, observer.latitude)) * rad;
+    const horizon = observer.elevation > 0 ? Math.acos(6356900 / (6356900 + observer.elevation)) / rad : 0;
+    const geometricElevation = -(depression + horizon);
+    // All supported twilight angles are below -0.575 degrees, so only this
+    // branch of Astral's refraction correction is needed.
+    const refraction = -20.774 / Math.tan(geometricElevation * rad) / 3600;
+    const zenith = (90 + depression + horizon + refraction) * rad;
+    const julianDay = +day / 86400000 + 2440587.5;
+    let minutes = 0;
+    for (let iteration = 0; iteration < 2; iteration++) {
+      const terms = this._astralSolarTerms((julianDay + minutes / 1440 - 2451545) / 36525);
+      const cosine = (Math.cos(zenith) - Math.sin(latitude) * Math.sin(terms.declination)) /
+        (Math.cos(latitude) * Math.cos(terms.declination));
+      if (!Number.isFinite(cosine) || cosine < -1 || cosine > 1) return null;
+      const hourAngle = -Math.acos(cosine) / rad;
+      let correction = (-observer.longitude - hourAngle) * 4 - terms.equation;
+      if (correction < -720) correction += 1440;
+      minutes = 720 + correction;
+    }
+    return new Date(+day + minutes * 60000);
+  }
+
+  _astralDuskUTC(day, observer, depression) {
+    let result = this._astralDuskTransit(day, observer, depression);
+    if (!result) return null; // This twilight does not occur (polar day/night).
+    if (result.toISOString().slice(0, 10) !== day.toISOString().slice(0, 10)) {
+      const adjacent = new Date(+day + (+result < +day ? 86400000 : -86400000));
+      result = this._astralDuskTransit(adjacent, observer, depression);
+      if (!result || result.toISOString().slice(0, 10) !== day.toISOString().slice(0, 10)) return null;
+    }
+    return result;
+  }
+
+
   _sunForDate(
     date,
     event
@@ -6651,3 +6737,210 @@ if (
       )
   });
 }
+
+
+/*
+Third-party license for the three _astral* methods above (Astral 3.2).
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+*/

@@ -2,7 +2,7 @@
 
 A custom [Lovelace](https://www.home-assistant.io/dashboards/) card for Home Assistant that shows a **Yesterday / Today / Tomorrow** timeline of your automations: what triggered them, what actions actually ran, and why an automation was skipped when a condition wasn't met.
 
-It reads directly from automation traces, so what you see is what actually happened (or is scheduled to happen), not a guess based on the automation's YAML alone.
+Past runs are read from automation traces. Future entries are predictions based on supported triggers, schedule definitions, and conditions; boolean gates use their current state and predictions refresh when that state changes.
 
 <!-- Add a screenshot of the card here, e.g. ![screenshot](screenshot.png) -->
 
@@ -11,7 +11,8 @@ It reads directly from automation traces, so what you see is what actually happe
 - Timeline view per automation entity, grouped by day (yesterday / today / tomorrow), with day navigation.
 - For each run: the trigger that fired it, the action(s) that were actually executed, or the reason it was skipped (condition not met).
 - Status color-coding: done, skipped, no action, error, running, planned, conditional (unpredictable future trigger).
-- A "planned" lane that predicts upcoming time / sun / time-pattern triggers for tomorrow, and flags triggers whose next run can't be predicted (e.g. state-based triggers).
+- A "planned" lane for supported time / sun / time-pattern triggers, schedule state transitions and native schedule start/end triggers, plus `sun.dusk` (civil, nautical, astronomical; before/after offsets).
+- Schedule conditions are checked at the predicted trigger time; `input_boolean` gates use their current state, including nested AND/OR/NOT conditions.
 - A list of automations with only conditional (unpredictable) future triggers, collapsible.
 - Per-status filters and a legend, so you can hide statuses you don't care about.
 - Toggle between friendly names and entity IDs for the entities involved.
@@ -82,6 +83,27 @@ exclude:
 merge_seconds: 60
 ```
 
+## Prediction support and limits
+
+- Schedule definitions are read using Home Assistant's read-only `schedule.get_schedule` action, for both UI and YAML schedules. If the action or entity is unavailable, predictions remain conditional.
+- Supported schedule triggers target explicit entity IDs: `state` transitions to/from `on` or `off`, `schedule.block_started`, and `schedule.block_ended` with the default `each` behavior. Native `schedule.is_on` / `schedule.is_off` conditions are supported too.
+- Native schedules spanning midnight use two blocks, such as Monday 22:00–24:00 and Tuesday 00:00–02:00. Continuous blocks do not produce a false state off/on transition at midnight.
+- Boolean predictions assume the current mode remains unchanged. The card recalculates when a boolean changes; arbitrary sensors and Jinja conditions are not extrapolated.
+- Nonzero `for` durations, attribute triggers, indirect schedule targets (area/device/floor/label), and native `first` / `all` trigger behaviors remain conditional.
+- `sun.dusk` uses a distinct calculation for each day and twilight type, including the configured location and elevation. Offsets can cross midnight. Civil `next_dusk` is used when applicable; missing solar data stays conditional. Other new solar trigger types are not covered.
+- After editing schedule blocks without changing their published state or attributes, reload the card to reread the definitions.
+
+## Tests
+
+With Node.js installed:
+
+```sh
+node --check automations-overview-card.js
+node --test tests/issue-1.test.cjs tests/issue-2.test.cjs
+```
+
+The 49 automated tests include 300 reference comparisons against Astral 3.2. They use a simulated Home Assistant API; validation on a live Home Assistant installation is still requested.
+
 ## Notes
 
 - This card only reads data (traces, registries, states) — it never modifies your automations.
@@ -89,4 +111,4 @@ merge_seconds: 60
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE), except the three `_astral*` astronomy methods adapted from Astral 3.2, which are licensed under Apache-2.0. Their attribution and the full Apache-2.0 license are included in `automations-overview-card.js`.
