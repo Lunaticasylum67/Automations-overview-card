@@ -1,5 +1,10 @@
-
-/* Automations Overview Card - V31 - issues #1 and #2 */
+/* Automations Overview Card - V37 - state conditions and rebuilt dependency tracking (issue #7); based on V36 */
+// Single source of truth for the version shown in the console log and in the
+// "Legend & filters" panel — update this alongside the header comment above
+// whenever the version changes, so a user can always tell which build is
+// actually running (mismatched cached files have been the cause of more than
+// one "fix doesn't work" report).
+const CARD_VERSION = "V37";
 /* ==========================================================
    V25 - TRADUCTIONS / TRANSLATIONS
    ========================================================== */
@@ -254,6 +259,9 @@ class AutomationsOverviewCard extends HTMLElement {
      */
     if (!this.shadowRoot) {
       this.attachShadow({ mode: "open" });
+      // V36 : cheap, once-per-instance way to confirm from devtools which build
+      // is actually running — see CARD_VERSION above.
+      console.log("Automations Overview Card " + CARD_VERSION);
     }
   }
  
@@ -262,17 +270,27 @@ class AutomationsOverviewCard extends HTMLElement {
     const inputs = this._predictionInputs(hass);
     const inputsChanged = this._predictionInputKey !== inputs;
     this._predictionInputKey = inputs;
+
+    // V34 : language/time_format affect only how already-loaded events are
+    // rendered, never the prediction itself — so a change here should not
+    // trigger a full _load() (traces, schedules...), just a cheap re-render.
+    const displayKey = JSON.stringify([hass.locale?.language, hass.locale?.time_format]);
+    const displayChanged = this._displayKey !== displayKey;
+    this._displayKey = displayKey;
+
     this._hass = hass;
- 
+
     if (!this.shadowRoot.childNodes.length) {
       this.shadowRoot.innerHTML = "<ha-card></ha-card>";
     }
- 
+
     const key = this._dateKey(this._targetDate());
- 
+
     if (this._loadedFor !== key || inputsChanged) {
       this._loadedFor = key;
       this._load();
+    } else if (displayChanged && !this._loading) {
+      this._render();
     }
   }
  
@@ -345,8 +363,50 @@ class AutomationsOverviewCard extends HTMLElement {
 
     return text;
   }
- 
- 
+
+
+  /*
+   * V33/V34 :
+   * respecte le réglage "Format horaire" du profil HA (hass.locale.time_format :
+   * "12" / "24" / "language" / "system") au lieu de suivre systématiquement la
+   * locale du navigateur via toLocaleTimeString([], ...).
+   *
+   * "language" et "system" ne sont PAS équivalents (voir l'implémentation
+   * officielle HA, use_am_pm.ts) : "language" fige le cycle horaire sur la
+   * langue choisie dans l'interface HA (hass.locale.language), alors que
+   * "system" doit ignorer cette langue et laisser le navigateur/OS décider —
+   * d'où locale=undefined dans ce cas, jamais hass.locale.language.
+   */
+  _formatTime(date) {
+
+    const language =
+      this._hass?.locale?.language ||
+      this._lang();
+
+    const timeFormat =
+      this._hass?.locale?.time_format;
+
+    const options = {
+      hour: "2-digit",
+      minute: "2-digit"
+    };
+
+    let locale =
+      language;
+
+    if (timeFormat === "24") {
+      options.hourCycle = "h23";
+    } else if (timeFormat === "12") {
+      options.hourCycle = "h12";
+    } else if (timeFormat === "system") {
+      locale = undefined;
+    }
+    // "language", undefined/unset : locale = language (comportement V33 inchangé).
+
+    return date.toLocaleTimeString(locale, options);
+  }
+
+
   /* ==========================================================
      DATES
      ========================================================== */
@@ -452,6 +512,17 @@ class AutomationsOverviewCard extends HTMLElement {
   }
 
   async _loadData() {
+    // Keep committed dependencies active until a complete refresh is published.
+    this._pendingConditionEntities = new Set();
+    try {
+      await this._loadDataWithDependencies();
+    } finally {
+      this._pendingConditionEntities = null;
+      this._predictionInputKey = this._predictionInputs(this._hass);
+    }
+  }
+
+  async _loadDataWithDependencies() {
     this._loading = true;
     this._render();
 
@@ -838,6 +909,8 @@ class AutomationsOverviewCard extends HTMLElement {
       );
  
  
+    this._conditionEntities = this._pendingConditionEntities;
+    this._predictionInputKey = this._predictionInputs(this._hass);
     this._loading = false;
     this._render();
   }
@@ -3534,8 +3607,8 @@ class AutomationsOverviewCard extends HTMLElement {
     return JSON.stringify([
       hass.config?.time_zone, hass.config?.latitude, hass.config?.longitude, hass.config?.elevation,
       hass.states["sun.sun"]?.state, hass.states["sun.sun"]?.attributes?.next_dusk,
-      Object.keys(hass.states).filter(id => /^(input_boolean|schedule)\./.test(id))
-        .sort().map(id => [id, hass.states[id].state, hass.states[id].attributes])
+      [...new Set([...Object.keys(hass.states).filter(id => /^(input_boolean|schedule)\./.test(id)), ...(this._conditionEntities || []), ...(this._pendingConditionEntities || [])])]
+        .sort().map(id => [id, hass.states[id]?.state, hass.states[id]?.attributes])
     ]);
   }
 
@@ -3723,20 +3796,37 @@ class AutomationsOverviewCard extends HTMLElement {
       const passes = after <= before ? seconds >= after && seconds < before : seconds >= after || seconds < before;
       return passes ? "ok" : "blocked";
     }
-    const native = kind === "schedule.is_on" || kind === "schedule.is_off";
+    // V32 : HA's newer condition editor emits typed native conditions for every
+    // toggle-capable domain (switch.is_on, light.is_off, binary_sensor.is_on...),
+    // not just schedule.is_on/is_off. Recognize the whole "<domain>.is_(on|off)"
+    // family so those aren't left "uncertain" purely for lacking a domain match.
+    const native = /^[a-z_]+\.is_(on|off)$/.test(kind);
     if (kind !== "state" && !native) return "uncertain";
     if (condition.attribute || !this._zeroDuration(condition.for) || !this._zeroDuration(condition.options?.for)) return "uncertain";
     if (native && Object.keys(condition.target || {}).some(key => key !== "entity_id")) return "uncertain";
     const ids = [].concat((native ? condition.target?.entity_id : condition.entity_id) ?? []);
-    const wanted = native ? [kind === "schedule.is_on" ? "on" : "off"] : [].concat(condition.state ?? []);
+    const wanted = native ? [kind.endsWith(".is_on") ? "on" : "off"] : [].concat(condition.state ?? []);
     if (!ids.length || !wanted.length || wanted.some(value => typeof value !== "string" || /\{[{%]/.test(value))) return "uncertain";
     const values = ids.map(id => {
-      if (typeof id !== "string") return "uncertain";
+      if (typeof id !== "string" || !/^[a-z_]+\.[a-z0-9_]+$/.test(id)) return "uncertain";
+      // Track every evaluated entity, including missing entities and all OR branches.
+      // This also fixes stale predictions for native switch/light conditions.
+      const dependencies = this._pendingConditionEntities || (this._conditionEntities ||= new Set());
+      if (!dependencies.has(id)) {
+        dependencies.add(id);
+        // Newly discovered dependencies are watched during subsequent async work.
+        // Rebase only when adding an ID, so discovery itself does not trigger a reload.
+        this._predictionInputKey = this._predictionInputs(this._hass);
+      }
       let actual;
       if (id.startsWith("schedule.")) actual = date ? this._scheduleStateAt(id, date) : null;
-      else if (id.startsWith("input_boolean.")) actual = this._hass.states[id]?.state;
-      else return "uncertain"; // Do not extrapolate arbitrary sensor states.
-      if (!["on", "off"].includes(actual)) return "uncertain";
+      // Non-schedule conditions use a CURRENT-state snapshot, not a forecast.
+      else actual = this._hass.states[id]?.state;
+      if (typeof actual !== "string") return "uncertain";
+      // Unavailable data must not make a negated condition look confidently true.
+      // Explicit conditions testing unknown/unavailable themselves remain useful.
+      if (["unknown", "unavailable"].includes(actual) && !wanted.includes(actual)) return "uncertain";
+      if ((native || id.startsWith("schedule.")) && !["on", "off"].includes(actual)) return "uncertain";
       return wanted.includes(actual) ? "ok" : "blocked";
     });
     const behavior = native ? condition.options?.behavior || "all" : condition.match || "all";
@@ -3777,6 +3867,15 @@ class AutomationsOverviewCard extends HTMLElement {
         if (!base) { uncertain.add(trigger.event || "sun"); return; }
         add(new Date(+base + this._parseOffset(trigger.offset)),
           this._t(trigger.event === "sunrise" ? "sunrise" : "sunset"), triggerId);
+      } else if (kind === "sun.sunset" || kind === "sun.sunrise") {
+        // V33 : native typed sun.sunset/sun.sunrise triggers (options.offset as an
+        // object + options.offset_type), distinct from the legacy generic "sun"
+        // platform handled above. Mirrors sun.dusk's day-shift-safe windowing so an
+        // offset that pushes the event across midnight is still matched correctly.
+        const event = kind === "sun.sunrise" ? "sunrise" : "sunset";
+        const prediction = this._sunEventPrediction(trigger, date, event);
+        if (!prediction) { uncertain.add(kind); return; }
+        prediction.times.forEach(dt => add(dt, this._t(event), triggerId));
       } else if (kind === "time_pattern") {
         const exact = this._exactTimePattern(trigger, date);
         if (!exact.length) uncertain.add(this._t("time_pattern_lower"));
@@ -3972,6 +4071,55 @@ class AutomationsOverviewCard extends HTMLElement {
     return { latitude, longitude, elevation };
   }
 
+  _sunEventPrediction(trigger, date, event) {
+    const options = trigger.options || {};
+    const rawOffset = this._solarOffsetMilliseconds(options.offset);
+    const offsetDirection = options.offset_type ?? "before";
+    if (rawOffset === null || !["before", "after"].includes(offsetDirection)) return null;
+    const offset = offsetDirection === "before" ? -rawOffset : rawOffset;
+    const { start, end } = this._startEnd(date);
+    const sourceStart = +start - offset;
+    const sourceEnd = +end - offset;
+    if (![sourceStart, sourceEnd].every(value => Number.isFinite(value) && Math.abs(value) < 8.64e15 - 86400000)) return null;
+    const observer = this._solarObserver();
+    const sun = this._hass.states["sun.sun"];
+    const attr = event === "sunrise" ? "next_rising" : "next_setting";
+    const raw = sun?.attributes?.[attr];
+    const nextEvent = typeof raw === "string" ? new Date(raw) : null;
+    const usableNextEvent = nextEvent && Number.isFinite(+nextEvent) &&
+      !["unknown", "unavailable"].includes(sun?.state);
+    if (!observer) {
+      // next_rising/next_setting only give the NEXT occurrence, and without
+      // coordinates there's no day-by-day astronomical fallback available —
+      // same limitation as the legacy generic "sun" trigger.
+      return usableNextEvent && +nextEvent >= sourceStart && +nextEvent < sourceEnd
+        ? { times: [new Date(+nextEvent + offset)] } : null;
+    }
+    // V34 : mirrors _duskPrediction's day-by-day astronomical search instead of
+    // only checking the single next_rising/next_setting lookahead instant, so
+    // "tomorrow" (and any other displayed day) resolves correctly, not just
+    // whichever day that one instant happens to fall in.
+    // V35 : _astralTransit() already applies its own atmospheric refraction
+    // correction (the "refraction" term), so passing 0.833° here double-counted
+    // refraction on top of it (~2 min error). Astral's actual convention is to
+    // pass only the sun's apparent angular radius (SUN_APPARENT_RADIUS =
+    // 32'/2 = 0.26666...°) as the depression for sunrise/sunset, and let the
+    // shared refraction term supply the rest — verified to match Astral 3.2
+    // (Python) to the millisecond for Paris/2026-09-21.
+    const depression = 32 / (60 * 2);
+    const transitDirection = event === "sunrise" ? "morning" : "evening";
+    const times = [];
+    let day = new Date(sourceStart);
+    day.setUTCHours(0, 0, 0, 0);
+    for (; +day < sourceEnd; day = new Date(+day + 86400000)) {
+      let time = this._astralTransitUTC(day, observer, depression, transitDirection);
+      if (usableNextEvent && nextEvent.toISOString().slice(0, 10) === day.toISOString().slice(0, 10)) time = nextEvent;
+      if (time && +time >= sourceStart && +time < sourceEnd) times.push(new Date(+time + offset));
+    }
+    return { times };
+  }
+
+
   _duskPrediction(trigger, date) {
     const options = trigger.options || {};
     const type = options.type ?? "civil";
@@ -4003,7 +4151,7 @@ class AutomationsOverviewCard extends HTMLElement {
     let day = new Date(sourceStart);
     day.setUTCHours(0, 0, 0, 0);
     for (; +day < sourceEnd; day = new Date(+day + 86400000)) {
-      let dusk = this._astralDuskUTC(day, observer, depressions[type]);
+      let dusk = this._astralTransitUTC(day, observer, depressions[type], "evening");
       if (usableNextDusk && nextDusk.toISOString().slice(0, 10) === day.toISOString().slice(0, 10)) dusk = nextDusk;
       if (dusk && +dusk >= sourceStart && +dusk < sourceEnd) times.push(new Date(+dusk + offset));
     }
@@ -4011,11 +4159,12 @@ class AutomationsOverviewCard extends HTMLElement {
   }
 
   /*
-   * The following three astronomy methods are adapted from Astral 3.2:
+   * The following astronomy methods are adapted from Astral 3.2:
    * https://github.com/sffjunkie/astral (astral/sun.py and astral/__init__.py).
    * Copyright 2009-2021 Simon Kennedy, sffjunkie+code@gmail.com.
    * Licensed under Apache-2.0; the full license is included at the end of
-   * this file. Modifications: JavaScript port limited to evening twilight,
+   * this file. Modifications: JavaScript port generalized to a "direction"
+   * parameter (evening/morning) instead of being limited to evening twilight,
    * merged coefficient calculations, null results instead of ValueError.
    */
   _astralSolarTerms(century) {
@@ -4039,14 +4188,30 @@ class AutomationsOverviewCard extends HTMLElement {
     return { declination, equation };
   }
 
-  _astralDuskTransit(day, observer, depression) {
+  // Adapted from Astral 3.2 refraction_at_zenith (Apache-2.0, license below).
+  // Input is elevation in degrees rather than zenith; result is in degrees.
+  _astralRefraction(elevation) {
+    if (elevation >= 85) return 0;
+    const tangent = Math.tan(elevation * Math.PI / 180);
+    let arcseconds;
+    if (elevation > 5) {
+      arcseconds = 58.1 / tangent - 0.07 / tangent ** 3 + 0.000086 / tangent ** 5;
+    } else if (elevation > -0.575) {
+      arcseconds = 1735 + elevation * (-518.2 + elevation * (103.4 + elevation * (-12.79 + elevation * 0.711)));
+    } else {
+      arcseconds = -20.774 / tangent;
+    }
+    return arcseconds / 3600;
+  }
+
+  _astralTransit(day, observer, depression, direction = "evening") {
     const rad = Math.PI / 180;
     const latitude = Math.max(-89.8, Math.min(89.8, observer.latitude)) * rad;
     const horizon = observer.elevation > 0 ? Math.acos(6356900 / (6356900 + observer.elevation)) / rad : 0;
     const geometricElevation = -(depression + horizon);
-    // All supported twilight angles are below -0.575 degrees, so only this
-    // branch of Astral's refraction correction is needed.
-    const refraction = -20.774 / Math.tan(geometricElevation * rad) / 3600;
+    // V35: low-altitude sunrise/sunset falls in Astral's near-horizon
+    // polynomial branch. Twilight and higher observers use the lower branch.
+    const refraction = this._astralRefraction(geometricElevation);
     const zenith = (90 + depression + horizon + refraction) * rad;
     const julianDay = +day / 86400000 + 2440587.5;
     let minutes = 0;
@@ -4055,7 +4220,9 @@ class AutomationsOverviewCard extends HTMLElement {
       const cosine = (Math.cos(zenith) - Math.sin(latitude) * Math.sin(terms.declination)) /
         (Math.cos(latitude) * Math.cos(terms.declination));
       if (!Number.isFinite(cosine) || cosine < -1 || cosine > 1) return null;
-      const hourAngle = -Math.acos(cosine) / rad;
+      // "evening" (dusk/sunset) uses the negative hour-angle solution, "morning"
+      // (dawn/sunrise) the positive one — the two roots of the same equation.
+      const hourAngle = (direction === "morning" ? 1 : -1) * Math.acos(cosine) / rad;
       let correction = (-observer.longitude - hourAngle) * 4 - terms.equation;
       if (correction < -720) correction += 1440;
       minutes = 720 + correction;
@@ -4063,12 +4230,12 @@ class AutomationsOverviewCard extends HTMLElement {
     return new Date(+day + minutes * 60000);
   }
 
-  _astralDuskUTC(day, observer, depression) {
-    let result = this._astralDuskTransit(day, observer, depression);
-    if (!result) return null; // This twilight does not occur (polar day/night).
+  _astralTransitUTC(day, observer, depression, direction = "evening") {
+    let result = this._astralTransit(day, observer, depression, direction);
+    if (!result) return null; // This event does not occur that day (polar day/night).
     if (result.toISOString().slice(0, 10) !== day.toISOString().slice(0, 10)) {
       const adjacent = new Date(+day + (+result < +day ? 86400000 : -86400000));
-      result = this._astralDuskTransit(adjacent, observer, depression);
+      result = this._astralTransit(adjacent, observer, depression, direction);
       if (!result || result.toISOString().slice(0, 10) !== day.toISOString().slice(0, 10)) return null;
     }
     return result;
@@ -4601,9 +4768,11 @@ class AutomationsOverviewCard extends HTMLElement {
         <span>
           ${this._t("legend_filters_header")}
         </span>
- 
-        <span></span>
- 
+
+        <span class="cardVersion">
+          ${CARD_VERSION}
+        </span>
+
       </button>
     `;
  
@@ -4860,17 +5029,7 @@ class AutomationsOverviewCard extends HTMLElement {
  
                 <b>
  
-                  ${now.toLocaleTimeString(
-                    [],
-                    {
- 
-                      hour:
-                        "2-digit",
- 
-                      minute:
-                        "2-digit"
-                    }
-                  )}
+                  ${this._formatTime(now)}
  
                   ${this._t("now_label")}
  
@@ -6070,6 +6229,30 @@ class AutomationsOverviewCard extends HTMLElement {
         }
  
  
+        /*
+         * V36 : version de la carte, affichee en clair a droite du header
+         * "Legend & filters" pour que n'importe qui puisse verifier d'un
+         * coup d'oeil quelle version est reellement chargee (sans devtools).
+         */
+        .cardVersion {
+ 
+          font-weight:
+            400;
+ 
+          font-size:
+            11px;
+ 
+          text-align:
+            right;
+ 
+          color:
+            var(--secondary-text-color);
+ 
+          opacity:
+            0.7;
+        }
+ 
+ 
         /* ====================================================
            MESSAGES
            ==================================================== */
@@ -6455,17 +6638,7 @@ class AutomationsOverviewCard extends HTMLElement {
   _eventRow(ev) {
  
     const time =
-      ev.time.toLocaleTimeString(
-        [],
-        {
- 
-          hour:
-            "2-digit",
- 
-          minute:
-            "2-digit"
-        }
-      );
+      this._formatTime(ev.time);
  
  
     const count =
@@ -6740,7 +6913,7 @@ if (
 
 
 /*
-Third-party license for the three _astral* methods above (Astral 3.2).
+Third-party license for the _astral* methods above (Astral 3.2).
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
