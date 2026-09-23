@@ -1,10 +1,10 @@
-/* Automations Overview Card - V37 - state conditions and rebuilt dependency tracking (issue #7); based on V36 */
+/* Automations Overview Card - V39 - next planned automation with exact and relative time (issue #9); based on V38.1 */
 // Single source of truth for the version shown in the console log and in the
 // "Legend & filters" panel — update this alongside the header comment above
 // whenever the version changes, so a user can always tell which build is
 // actually running (mismatched cached files have been the cause of more than
 // one "fix doesn't work" report).
-const CARD_VERSION = "V37";
+const CARD_VERSION = "V39";
 /* ==========================================================
    V25 - TRADUCTIONS / TRANSLATIONS
    ========================================================== */
@@ -67,6 +67,10 @@ const AUTOMATION_TIMELINE_I18N = {
     sunset_lower: "coucher du soleil",
     sunrise: "Lever du soleil",
     sunset: "Coucher du soleil",
+    sun_elevation_above: "Élévation solaire au-dessus de {value}°",
+    sun_elevation_below: "Élévation solaire sous {value}°",
+    sun_elevation_between: "Élévation solaire entre {min}° et {max}°",
+    sun_elevation_outside: "Élévation solaire hors de {min}° à {max}°",
     time_pattern: "Motif horaire",
     time_pattern_lower: "motif horaire",
     dynamic_trigger: "d\u00e9clencheur dynamique",
@@ -99,7 +103,12 @@ const AUTOMATION_TIMELINE_I18N = {
     loading_message: "Analyse des automations\u2026",
     day_yesterday: "Hier",
     day_today: "Aujourd\u2019hui",
-    day_tomorrow: "Demain"
+    day_tomorrow: "Demain",
+    next_planned_label: "Prochaine automation prévue",
+    next_planned_none: "Aucune automation prévue",
+    next_planned_at: "{name} à {time}",
+    next_planned_tomorrow_at: "{name} demain à {time}",
+    relative_now: "maintenant"
   },
 
   en: {
@@ -158,6 +167,10 @@ const AUTOMATION_TIMELINE_I18N = {
     sunset_lower: "sunset",
     sunrise: "Sunrise",
     sunset: "Sunset",
+    sun_elevation_above: "Sun elevation above {value}°",
+    sun_elevation_below: "Sun elevation below {value}°",
+    sun_elevation_between: "Sun elevation between {min}° and {max}°",
+    sun_elevation_outside: "Sun elevation outside {min}° to {max}°",
     time_pattern: "Time pattern",
     time_pattern_lower: "time pattern",
     dynamic_trigger: "dynamic trigger",
@@ -190,7 +203,12 @@ const AUTOMATION_TIMELINE_I18N = {
     loading_message: "Analyzing automations\u2026",
     day_yesterday: "Yesterday",
     day_today: "Today",
-    day_tomorrow: "Tomorrow"
+    day_tomorrow: "Tomorrow",
+    next_planned_label: "Next planned automation",
+    next_planned_none: "No planned automation",
+    next_planned_at: "{name} at {time}",
+    next_planned_tomorrow_at: "{name} tomorrow at {time}",
+    relative_now: "now"
   }
 
 };
@@ -203,6 +221,7 @@ class AutomationsOverviewCard extends HTMLElement {
       include_disabled: config.include_disabled === true,
       merge_seconds: config.merge_seconds ?? 45,
       action_details: config.action_details !== false,
+      show_next_planned: config.show_next_planned !== false,
       exclude: config.exclude || [],
       ...config
     };
@@ -211,6 +230,8 @@ class AutomationsOverviewCard extends HTMLElement {
     this._loadedFor = null;
     this._events = [];
     this._conditionals = [];
+    this._nextPlanned = null;
+    this._nextPlannedCandidates = [];
     this._conditionalsOpen = false;
     this._legendFiltersOpen = false;
  
@@ -262,6 +283,28 @@ class AutomationsOverviewCard extends HTMLElement {
       // V36 : cheap, once-per-instance way to confirm from devtools which build
       // is actually running — see CARD_VERSION above.
       console.log("Automations Overview Card " + CARD_VERSION);
+    }
+  }
+ 
+  connectedCallback() {
+    if (!this._relativeTimer) {
+      this._relativeTimer = setInterval(() => {
+        if (!this._hass || this._loading) return;
+        const dayKey = this._dateKey(this._todayStart());
+        if (this._relativeDayKey && this._relativeDayKey !== dayKey) {
+          this._loadedFor = null;
+          this._load();
+        } else {
+          this._render();
+        }
+      }, 60000);
+    }
+  }
+
+  disconnectedCallback() {
+    if (this._relativeTimer) {
+      clearInterval(this._relativeTimer);
+      this._relativeTimer = null;
     }
   }
  
@@ -537,11 +580,16 @@ class AutomationsOverviewCard extends HTMLElement {
 
     const date = this._targetDate();
     const { start, end } = this._startEnd(date);
+    const nextNow = new Date();
+    const nextToday = this._todayStart();
+    const nextTomorrow = new Date(nextToday);
+    nextTomorrow.setDate(nextTomorrow.getDate() + 1);
 
     const automations = this._automationStates();
  
     let events = [];
     let conditionals = [];
+    let nextPlannedCandidates = [];
  
     const chunks = [];
  
@@ -872,6 +920,21 @@ class AutomationsOverviewCard extends HTMLElement {
             });
           }
         }
+
+        // V39 / issue #9: derive the next planned event independently of the
+        // displayed day and of the legend's presentation-only filters.
+        if (config && this.config.show_next_planned) {
+          for (const predictionDate of [nextToday, nextTomorrow]) {
+            const predictionWindow = this._startEnd(predictionDate);
+            const prediction = this._predict(config, predictionDate, state);
+            for (const ev of prediction.events) {
+              if (ev.type === "planned" && ev.time > nextNow &&
+                  ev.time >= predictionWindow.start && ev.time < predictionWindow.end) {
+                nextPlannedCandidates.push(ev);
+              }
+            }
+          }
+        }
       }
     }
  
@@ -907,6 +970,11 @@ class AutomationsOverviewCard extends HTMLElement {
         (a, b) =>
           a.name.localeCompare(b.name)
       );
+
+    nextPlannedCandidates.sort((a, b) => a.time - b.time);
+    this._nextPlannedCandidates = nextPlannedCandidates;
+    this._nextPlanned = nextPlannedCandidates[0] || null;
+    this._relativeDayKey = this._dateKey(this._todayStart());
  
  
     this._conditionEntities = this._pendingConditionEntities;
@@ -3876,6 +3944,10 @@ class AutomationsOverviewCard extends HTMLElement {
         const prediction = this._sunEventPrediction(trigger, date, event);
         if (!prediction) { uncertain.add(kind); return; }
         prediction.times.forEach(dt => add(dt, this._t(event), triggerId));
+      } else if (kind === "sun.elevation_crossed_threshold") {
+        const prediction = this._sunElevationPrediction(trigger, date);
+        if (!prediction) { uncertain.add(kind); return; }
+        prediction.times.forEach(dt => add(dt, prediction.detail, triggerId));
       } else if (kind === "time_pattern") {
         const exact = this._exactTimePattern(trigger, date);
         if (!exact.length) uncertain.add(this._t("time_pattern_lower"));
@@ -4071,6 +4143,151 @@ class AutomationsOverviewCard extends HTMLElement {
     return { latitude, longitude, elevation };
   }
 
+  _solarThresholdNumber(entry) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return null;
+    // Home Assistant keeps only the selected value after validation, but the
+    // automation editor may still expose active_choice in stored YAML.
+    if (entry.active_choice && !["number", "entity"].includes(entry.active_choice)) return null;
+    const hasNumber = typeof entry.number === "number" && Number.isFinite(entry.number);
+    const hasEntity = typeof entry.entity === "string";
+    // active_choice is authoritative. Without it, accepting both fields would
+    // silently guess which threshold Home Assistant is actually using.
+    if (entry.active_choice === "number" && !hasNumber) return null;
+    if (entry.active_choice === "entity" && !hasEntity) return null;
+    if (!entry.active_choice && hasNumber && hasEntity) return null;
+    if (entry.active_choice !== "entity" && hasNumber) {
+      return entry.number >= -90 && entry.number <= 90 ? entry.number : null;
+    }
+    // A threshold can also be sourced from an entity's current numeric state
+    // (e.g. an input_number the user tunes from the dashboard). Read as a live
+    // snapshot and tracked as a prediction dependency, same mechanism as the
+    // state-condition entities above: a change to it refreshes the prediction.
+    if (entry.active_choice !== "number" && hasEntity && /^[a-z_]+\.[a-z0-9_]+$/.test(entry.entity)) {
+      const id = entry.entity;
+      const dependencies = this._pendingConditionEntities || (this._conditionEntities ||= new Set());
+      if (!dependencies.has(id)) {
+        dependencies.add(id);
+        this._predictionInputKey = this._predictionInputs(this._hass);
+      }
+      const state = this._hass.states[id]?.state;
+      const value = typeof state === "string" ? Number(state) : NaN;
+      return Number.isFinite(value) && value >= -90 && value <= 90 ? value : null;
+    }
+    return null;
+  }
+
+  _sunElevationPrediction(trigger, date) {
+    // V38 / issue #8: predict when the sun enters a fixed numeric elevation
+    // threshold, including above, below, between, outside and `for` durations.
+    const options = trigger.options || {};
+    const threshold = options.threshold;
+    if (!threshold || typeof threshold !== "object" || Array.isArray(threshold)) return null;
+    const type = threshold.type;
+    if (!["above", "below", "between", "outside"].includes(type)) return null;
+
+    let low;
+    let high;
+    if (type === "above" || type === "below") {
+      low = this._solarThresholdNumber(threshold.value);
+      if (low === null) return null;
+    } else {
+      low = this._solarThresholdNumber(threshold.value_min);
+      high = this._solarThresholdNumber(threshold.value_max);
+      if (low === null || high === null || low > high) return null;
+    }
+
+    const rawDuration = options.for ?? 0;
+    const duration = this._solarOffsetMilliseconds(rawDuration);
+    if (duration === null || duration < 0) return null;
+    const observer = this._solarObserver();
+    if (!observer) return null;
+    const { start, end } = this._startEnd(date);
+    const entries = [];
+
+    // Return the apparent-elevation crossing exposed by sun.sun. This is not a
+    // physical-horizon event: Astral's elevation() applies refraction but not
+    // the observer-height horizon dip used by sunrise/sunset/dawn/dusk.
+    const crossing = (day, elevation, direction) =>
+      this._astralElevationCrossingUTC(day, observer, elevation,
+        direction === "morning" ? "rising" : "setting");
+    const addEntry = (entry, exit) => {
+      if (!entry) return;
+      const fire = new Date(+entry + duration);
+      // A `for:` timer is cancelled if the sun leaves the selected range first.
+      if ((!exit || +fire <= +exit) && fire >= start && fire < end) entries.push(fire);
+    };
+
+    let day = new Date(+start - duration - 86400000);
+    day.setUTCHours(0, 0, 0, 0);
+    for (; +day < +end; day = new Date(+day + 86400000)) {
+      const nextDay = new Date(+day + 86400000);
+      if (type === "above") {
+        addEntry(crossing(day, low, "morning"), crossing(day, low, "evening"));
+      } else if (type === "below") {
+        addEntry(crossing(day, low, "evening"), crossing(nextDay, low, "morning"));
+      } else if (type === "between") {
+        const morningLow = crossing(day, low, "morning");
+        // If the daily maximum never reaches `high`, the interval remains
+        // valid until the evening descent crosses `low`.
+        addEntry(morningLow,
+          crossing(day, high, "morning") || crossing(day, low, "evening"));
+        addEntry(crossing(day, high, "evening"), crossing(day, low, "evening"));
+      } else {
+        addEntry(crossing(day, high, "morning"), crossing(day, high, "evening"));
+        addEntry(crossing(day, low, "evening"), crossing(nextDay, low, "morning"));
+      }
+    }
+
+    const vars = type === "above" || type === "below"
+      ? { value: low } : { min: low, max: high };
+    entries.sort((a, b) => +a - +b);
+    return { times: entries, detail: this._t("sun_elevation_" + type, vars) };
+  }
+
+  // Also adapted from Astral 3.2 (same hour-angle/declination equation as
+  // _astralTransit below, restated to solve for a given true elevation
+  // instead of a depression); see the Apache-2.0 attribution and full license
+  // further down this file, which covers this method too.
+  _astralElevationCrossing(day, observer, targetElevation, direction) {
+    const rad = Math.PI / 180;
+    const latitude = Math.max(-89.8, Math.min(89.8, observer.latitude)) * rad;
+    const julianDay = +day / 86400000 + 2440587.5;
+    let geometric = targetElevation;
+    let minutes = null;
+
+    // Astral reports apparent elevation. Since refraction depends on the
+    // unknown geometric elevation, converge on it with a few fixed-point
+    // iterations, matching elevation() rather than time_of_transit().
+    for (let refine = 0; refine < 6; refine++) {
+      const refraction = this._astralRefraction(geometric);
+      const zenith = (90 - targetElevation + refraction) * rad;
+      minutes = 0;
+      for (let iteration = 0; iteration < 2; iteration++) {
+        const terms = this._astralSolarTerms((julianDay + minutes / 1440 - 2451545) / 36525);
+        const cosine = (Math.cos(zenith) - Math.sin(latitude) * Math.sin(terms.declination)) /
+          (Math.cos(latitude) * Math.cos(terms.declination));
+        if (!Number.isFinite(cosine) || cosine < -1 || cosine > 1) return null;
+        const hourAngle = (direction === "rising" ? 1 : -1) * Math.acos(cosine) / rad;
+        let correction = (-observer.longitude - hourAngle) * 4 - terms.equation;
+        if (correction < -720) correction += 1440;
+        minutes = 720 + correction;
+      }
+      geometric = targetElevation - refraction;
+    }
+    return new Date(+day + minutes * 60000);
+  }
+
+  _astralElevationCrossingUTC(day, observer, targetElevation, direction) {
+    let result = this._astralElevationCrossing(day, observer, targetElevation, direction);
+    if (!result) return null;
+    if (result.toISOString().slice(0, 10) !== day.toISOString().slice(0, 10)) {
+      const adjacent = new Date(+day + (+result < +day ? 86400000 : -86400000));
+      result = this._astralElevationCrossing(adjacent, observer, targetElevation, direction);
+      if (!result || result.toISOString().slice(0, 10) !== day.toISOString().slice(0, 10)) return null;
+    }
+    return result;
+  }
+
   _sunEventPrediction(trigger, date, event) {
     const options = trigger.options || {};
     const rawOffset = this._solarOffsetMilliseconds(options.offset);
@@ -4159,13 +4376,17 @@ class AutomationsOverviewCard extends HTMLElement {
   }
 
   /*
-   * The following astronomy methods are adapted from Astral 3.2:
+   * The following astronomy methods (and _astralElevationCrossing above) are
+   * adapted from Astral 3.2:
    * https://github.com/sffjunkie/astral (astral/sun.py and astral/__init__.py).
    * Copyright 2009-2021 Simon Kennedy, sffjunkie+code@gmail.com.
    * Licensed under Apache-2.0; the full license is included at the end of
    * this file. Modifications: JavaScript port generalized to a "direction"
    * parameter (evening/morning) instead of being limited to evening twilight,
-   * merged coefficient calculations, null results instead of ValueError.
+   * merged coefficient calculations, null results instead of ValueError,
+   * and (for _astralElevationCrossing) restated to solve for a given true
+   * elevation without the observer-height horizon-dip term that
+   * time_of_transit applies for physical horizon events.
    */
   _astralSolarTerms(century) {
     const rad = Math.PI / 180;
@@ -4920,6 +5141,50 @@ class AutomationsOverviewCard extends HTMLElement {
      RENDU
      ========================================================== */
  
+  _relativePlannedTime(time, now) {
+    const deltaSeconds = Math.max(0, (+time - +now) / 1000);
+    if (deltaSeconds < 30) return this._t("relative_now");
+    const language = this._hass.locale?.language || this._lang();
+    const formatter = new Intl.RelativeTimeFormat(language, { numeric: "always" });
+    if (deltaSeconds < 3600) return formatter.format(Math.ceil(deltaSeconds / 60), "minute");
+    if (deltaSeconds < 86400) return formatter.format(Math.ceil(deltaSeconds / 3600), "hour");
+    return formatter.format(Math.ceil(deltaSeconds / 86400), "day");
+  }
+
+  _nextPlannedHtml(now) {
+    const event = (this._nextPlannedCandidates || []).find(candidate => candidate.time > now) ||
+      (this._nextPlanned?.time > now ? this._nextPlanned : null);
+    this._nextPlanned = event;
+    if (!event || event.time <= now) {
+      return `
+        <div class="nextPlanned nextPlannedEmpty">
+          <ha-icon class="nextPlannedIcon" icon="mdi:clock-outline"></ha-icon>
+          <span>
+            <span class="nextPlannedLabel">${this._t("next_planned_label")}</span>
+            <span class="nextPlannedText">${this._t("next_planned_none")}</span>
+          </span>
+        </div>
+      `;
+    }
+    const tomorrow = new Date(this._todayStart());
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const key = this._dateKey(event.time) === this._dateKey(tomorrow)
+      ? "next_planned_tomorrow_at" : "next_planned_at";
+    const exact = this._t(key, { name: event.name, time: this._formatTime(event.time) });
+    const relative = this._relativePlannedTime(event.time, now);
+    return `
+      <button class="nextPlanned" data-entity="${this._esc(event.entity_id)}">
+        <ha-icon class="nextPlannedIcon" icon="mdi:clock-outline"></ha-icon>
+        <span>
+          <span class="nextPlannedLabel">${this._t("next_planned_label")}</span>
+          <span class="nextPlannedText">
+            ${this._esc(exact)} <span class="nextPlannedRelative">— ${this._esc(relative)}</span>
+          </span>
+        </span>
+      </button>
+    `;
+  }
+
   _render() {
  
     if (
@@ -4959,6 +5224,10 @@ class AutomationsOverviewCard extends HTMLElement {
  
     const now =
       new Date();
+
+    const nextPlannedHtml = this.config.show_next_planned
+      ? this._nextPlannedHtml(now)
+      : "";
  
  
     const visibleEvents =
@@ -5187,6 +5456,49 @@ class AutomationsOverviewCard extends HTMLElement {
           font-size: 1.2rem;
           font-weight: 600;
           margin-bottom: 12px;
+        }
+
+        .nextPlanned {
+          display: grid;
+          grid-template-columns: 24px 1fr;
+          gap: 10px;
+          align-items: center;
+          width: 100%;
+          box-sizing: border-box;
+          margin: 0 0 14px;
+          padding: 12px 13px;
+          border: 0;
+          border-radius: 10px;
+          background: color-mix(in srgb, var(--primary-color) 10%, var(--card-background-color));
+          color: var(--primary-text-color);
+          text-align: left;
+        }
+
+        button.nextPlanned {
+          cursor: pointer;
+        }
+
+        .nextPlannedIcon {
+          color: var(--primary-color);
+        }
+
+        .nextPlannedLabel,
+        .nextPlannedText {
+          display: block;
+        }
+
+        .nextPlannedLabel {
+          color: var(--secondary-text-color);
+          font-size: .78rem;
+          margin-bottom: 3px;
+        }
+
+        .nextPlannedText {
+          font-weight: 600;
+        }
+
+        .nextPlannedRelative {
+          color: var(--primary-color);
         }
  
  
@@ -6385,6 +6697,8 @@ class AutomationsOverviewCard extends HTMLElement {
             )}
  
           </div>
+
+          ${nextPlannedHtml}
  
  
           <div class="tabs">
@@ -6468,6 +6782,15 @@ class AutomationsOverviewCard extends HTMLElement {
           }
         );
       });
+
+    const nextPlannedButton =
+      this.shadowRoot.querySelector("button.nextPlanned");
+    if (nextPlannedButton) {
+      nextPlannedButton.addEventListener(
+        "click",
+        () => this._openAutomation(nextPlannedButton.dataset.entity)
+      );
+    }
  
  
     /*
