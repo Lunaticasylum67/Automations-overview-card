@@ -288,8 +288,17 @@ class AutomationsOverviewCard extends HTMLElement {
     const validDisplayModes = ["full", "next_planned", "next_planned_details"];
     const configuredDisplayMode = validDisplayModes.includes(config.display_mode)
       ? config.display_mode : "full";
+    this._displayModeStorageKey = `automations-overview-card.display_mode.${encodeURIComponent(this.config.title)}`;
+    let storedDisplayMode = null;
+    try {
+      storedDisplayMode = window.localStorage?.getItem(this._displayModeStorageKey) || null;
+    } catch (_) {
+      storedDisplayMode = null;
+    }
+    const initialDisplayMode = validDisplayModes.includes(storedDisplayMode)
+      ? storedDisplayMode : configuredDisplayMode;
     this._displayMode = validDisplayModes.includes(this._displayMode)
-      ? this._displayMode : configuredDisplayMode;
+      ? this._displayMode : initialDisplayMode;
  
     this._dayOffset = 0;
     this._loadedFor = null;
@@ -7319,6 +7328,11 @@ class AutomationsOverviewCard extends HTMLElement {
         if (!["full", "next_planned", "next_planned_details"].includes(mode)) return;
         this._displayMode = mode;
         this.config.display_mode = mode;
+        try {
+          window.localStorage?.setItem(this._displayModeStorageKey, mode);
+        } catch (_) {
+          // Local storage can be unavailable in restricted browser contexts.
+        }
         this._legendFiltersOpen = false;
         if (mode !== "full" && !this._nextPlannedCandidates.length) {
           this._loadedFor = null;
