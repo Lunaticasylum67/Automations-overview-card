@@ -90,11 +90,11 @@ merge_seconds: 60
 
 - Schedule definitions are read using Home Assistant's read-only `schedule.get_schedule` action, for both UI and YAML schedules. If the action or entity is unavailable, predictions remain conditional.
 - Supported schedule triggers target explicit entity IDs: `state` transitions to/from `on` or `off`, `schedule.block_started`, and `schedule.block_ended` with the default `each` behavior. Native `schedule.is_on` / `schedule.is_off` conditions are supported too.
-- Native schedules spanning midnight use two blocks, such as Monday 22:00–24:00 and Tuesday 00:00–02:00. Continuous blocks do not produce a false state off/on transition at midnight.
+- Native schedules spanning midnight use two blocks, such as Monday 22:00–24:00 and Tuesday 00:00–02:00. Continuous blocks do not produce a false state off/on transition at midnight, including when Home Assistant serializes a 24:00 block ending as `23:59:59.999999`.
 - State-based predictions assume the current value remains unchanged. The card recalculates when a tracked entity's state changes; values are compared as-is and never extrapolated into the future (a sensor holding a string is matched against the configured value, not forecast). Jinja/template conditions remain conditional.
 - Nonzero `for` durations, attribute triggers, indirect schedule targets (area/device/floor/label), and native `first` / `all` trigger behaviors remain conditional.
 - `sun.dusk` uses a distinct calculation for each day and twilight type, including the configured location and elevation. Offsets can cross midnight. Civil `next_dusk` is used when applicable; missing solar data stays conditional.
-- `sun.elevation_crossed_threshold` supports fixed numeric `above`, `below`, `between`, and `outside` thresholds, including fixed `for` durations. Entity-based thresholds use the entity selected by `active_choice`; unavailable, ambiguous, or dynamic values remain conditional.
+- `sun.elevation_crossed_threshold` supports fixed numeric `above`, `below`, `between`, and `outside` thresholds, including fixed `for` durations. Entity-based thresholds use the entity selected by `active_choice`; unavailable, ambiguous, or dynamic values remain conditional. Other new solar trigger types are not covered.
 - After editing schedule blocks without changing their published state or attributes, reload the card to reread the definitions.
 
 ## Tests
@@ -103,10 +103,10 @@ With Node.js installed:
 
 ```sh
 node --check automations-overview-card.js
-node --test tests/issue-1.test.cjs tests/issue-2.test.cjs tests/issue-7.test.cjs
+node --test tests/issue-1.test.cjs tests/issue-2.test.cjs tests/issue-7.test.cjs tests/issue-8.test.cjs tests/issue-9.test.cjs tests/issue-10.test.cjs tests/issue-381.test.cjs
 ```
 
-The 54 automated tests include 300 reference comparisons against Astral 3.2. They use a simulated Home Assistant API; validation on a live Home Assistant installation is still requested.
+The 69 automated tests include 300 reference comparisons against Astral 3.2. They use a simulated Home Assistant API; validation on a live Home Assistant installation is still requested.
 
 ## Notes
 
