@@ -12,7 +12,8 @@ Past runs are read from automation traces. Future entries are predictions based 
 - For each run: the trigger that fired it, the action(s) that were actually executed, or the reason it was skipped (condition not met).
 - Status color-coding: done, skipped, no action, error, running, planned, conditional (unpredictable future trigger).
 - A "planned" lane for supported time / sun / time-pattern triggers, schedule state transitions and native schedule start/end triggers, plus `sun.dusk` (civil, nautical, astronomical; before/after offsets).
-- A "Next planned automation" banner shows the next predictable automation with its exact time and a live relative delay. Clicking the banner opens the automation details.
+- Three display modes: the complete timeline, a compact next-planned view, or a detailed next-planned view showing the trigger, conditions, and configured actions.
+- The next-planned views show the exact execution time, a live relative delay, and a certainty indicator (`Planned` or `State to confirm`).
 - Schedule conditions are checked at the predicted trigger time; other `state` conditions (any domain) use their current value, including nested AND/OR/NOT conditions.
 - A list of automations with only conditional (unpredictable) future triggers, collapsible.
 - Per-status filters and a legend, so you can hide statuses you don't care about.
@@ -64,8 +65,10 @@ That's it — the card automatically discovers every `automation.*` entity. Use 
 | `title` | string | `Overview` | Card title. |
 | `language` | string | auto | Force the UI language (`fr` or `en`). By default the card follows your Home Assistant profile language and falls back to English if unsupported. |
 | `entity_name_mode` | string | `friendly` | Initial entity display mode: `friendly` (friendly name) or `entity_id`. Can also be toggled from the card UI. |
+| `display_mode` | string | `full` | Display mode: `full`, `next_planned`, or `next_planned_details`. It can also be changed from Filters & Settings. |
+| `show_compact_settings` | boolean | `false` | Show a small settings button in either next-planned mode. |
 | `show_conditionals` | boolean | `true` | Show the collapsible list of automations that only have unpredictable (conditional) future triggers. |
-| `show_next_planned` | boolean | `true` | Show the next planned automation banner with its exact and relative time. |
+| `show_next_planned` | boolean | `true` | Show the next planned automation banner in `full` mode. |
 | `include_disabled` | boolean | `false` | Include disabled automations. |
 | `action_details` | boolean | `true` | Fetch and display the detailed trigger/action text for each run (one extra trace lookup per run). Disable for a lighter/faster card if you only need the status colors. |
 | `exclude` | list of strings | `[]` | Entity IDs of automations to hide from the card. |
@@ -78,23 +81,43 @@ type: custom:automations-overview-card
 title: Automations Overview
 language: fr
 entity_name_mode: entity_id
+display_mode: full
+show_compact_settings: false
 show_conditionals: true
-show_next_planned: true
 include_disabled: false
 exclude:
   - automation.debug_test
 merge_seconds: 60
 ```
 
+Compact next-planned mode:
+
+```yaml
+type: custom:automations-overview-card
+title: Next automation
+display_mode: next_planned
+show_compact_settings: true
+```
+
+Detailed next-planned mode:
+
+```yaml
+type: custom:automations-overview-card
+title: Next automation
+display_mode: next_planned_details
+```
+
+The detailed view describes the automation configuration. Its actions have not yet been executed. Automations whose future trigger time cannot be determined are not candidates for the next-planned display.
+
 ## Prediction support and limits
 
 - Schedule definitions are read using Home Assistant's read-only `schedule.get_schedule` action, for both UI and YAML schedules. If the action or entity is unavailable, predictions remain conditional.
 - Supported schedule triggers target explicit entity IDs: `state` transitions to/from `on` or `off`, `schedule.block_started`, and `schedule.block_ended` with the default `each` behavior. Native `schedule.is_on` / `schedule.is_off` conditions are supported too.
-- Native schedules spanning midnight use two blocks, such as Monday 22:00–24:00 and Tuesday 00:00–02:00. Continuous blocks do not produce a false state off/on transition at midnight, including when Home Assistant serializes a 24:00 block ending as `23:59:59.999999`.
+- Native schedules spanning midnight use two blocks, such as Monday 22:00–24:00 and Tuesday 00:00–02:00. Continuous blocks do not produce a false state off/on transition at midnight.
 - State-based predictions assume the current value remains unchanged. The card recalculates when a tracked entity's state changes; values are compared as-is and never extrapolated into the future (a sensor holding a string is matched against the configured value, not forecast). Jinja/template conditions remain conditional.
 - Nonzero `for` durations, attribute triggers, indirect schedule targets (area/device/floor/label), and native `first` / `all` trigger behaviors remain conditional.
 - `sun.dusk` uses a distinct calculation for each day and twilight type, including the configured location and elevation. Offsets can cross midnight. Civil `next_dusk` is used when applicable; missing solar data stays conditional.
-- `sun.elevation_crossed_threshold` supports fixed numeric `above`, `below`, `between`, and `outside` thresholds, including fixed `for` durations. Entity-based thresholds use the entity selected by `active_choice`; unavailable, ambiguous, or dynamic values remain conditional. Other new solar trigger types are not covered.
+- `sun.elevation_crossed_threshold` predictions support fixed numeric `above`, `below`, `between`, and `outside` thresholds, including a fixed `for` duration. Entity-driven thresholds remain conditional because their future value is not knowable.
 - After editing schedule blocks without changing their published state or attributes, reload the card to reread the definitions.
 
 ## Tests
@@ -103,10 +126,10 @@ With Node.js installed:
 
 ```sh
 node --check automations-overview-card.js
-node --test tests/issue-1.test.cjs tests/issue-2.test.cjs tests/issue-7.test.cjs tests/issue-8.test.cjs tests/issue-9.test.cjs tests/issue-10.test.cjs tests/issue-381.test.cjs
+node --test tests/*.test.cjs
 ```
 
-The 69 automated tests include 300 reference comparisons against Astral 3.2. They use a simulated Home Assistant API; validation on a live Home Assistant installation is still requested.
+The 74 automated tests include 300 reference comparisons against Astral 3.2. They use a simulated Home Assistant API; validation on a live Home Assistant installation is still requested.
 
 ## Notes
 
