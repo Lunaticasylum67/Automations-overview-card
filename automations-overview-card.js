@@ -280,7 +280,7 @@ class AutomationsOverviewCard extends HTMLElement {
       merge_seconds: config.merge_seconds ?? 45,
       action_details: config.action_details !== false,
       show_next_planned: config.show_next_planned !== false,
-      show_compact_settings: config.show_compact_settings === true,
+      show_compact_settings: config.show_compact_settings !== false,
       exclude: config.exclude || [],
       ...config
     };
