@@ -1,10 +1,10 @@
-/* Automations Overview Card - V39 - next planned automation with exact and relative time (issue #9); based on V38.1 */
+/* Automations Overview Card - V40 - normalize Home Assistant end-of-day schedule times (issue #10); based on V39 */
 // Single source of truth for the version shown in the console log and in the
 // "Legend & filters" panel — update this alongside the header comment above
 // whenever the version changes, so a user can always tell which build is
 // actually running (mismatched cached files have been the cause of more than
 // one "fix doesn't work" report).
-const CARD_VERSION = "V39";
+const CARD_VERSION = "V40";
 /* ==========================================================
    V25 - TRADUCTIONS / TRANSLATIONS
    ========================================================== */
@@ -3686,10 +3686,17 @@ class AutomationsOverviewCard extends HTMLElement {
 
   _clockSeconds(value) {
     if (typeof value !== "string") return null;
-    const match = /^(\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?$/.exec(value);
+    const match = /^(\d{1,2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?$/.exec(value);
     if (!match) return null;
-    const [, h, m, s = "0"] = match;
+    const [, h, m, s = "0", fraction = ""] = match;
     if (+h > 24 || +m > 59 || +s > 59 || (+h === 24 && (+m || +s))) return null;
+    // schedule.get_schedule serializes a block ending at 24:00 as an inclusive
+    // final instant such as 23:59:59.999999. Treat an all-nine fraction (with
+    // at least centisecond precision) as the next midnight, otherwise a
+    // continuous nightly schedule appears to turn off and back on at 00:00.
+    if (+h === 23 && +m === 59 && +s === 59 && fraction.length >= 2 && /^9+$/.test(fraction)) {
+      return 86400;
+    }
     return +h * 3600 + +m * 60 + +s;
   }
 
