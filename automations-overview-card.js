@@ -1,10 +1,10 @@
-/* Automations Overview Card - V45 - fixes #12 (timer.finished prediction) and #13 (no flash of "no automations" while loading); adds area/label/category filters and a visual editor (#11); based on V44 */
+/* Automations Overview Card - V46 - fixes #14 (focus ring around the whole next-planned banner) and #15 (no <?> glyphs in the condition tooltip); based on V45 (1.1.1) */
 // Single source of truth for the version shown in the console log and in the
 // "Legend & filters" panel — update this alongside the header comment above
 // whenever the version changes, so a user can always tell which build is
 // actually running (mismatched cached files have been the cause of more than
 // one "fix doesn't work" report).
-const CARD_VERSION = "V45";
+const CARD_VERSION = "V46";
 /* ==========================================================
    V25 - TRADUCTIONS / TRANSLATIONS
    ========================================================== */
@@ -5727,7 +5727,10 @@ class AutomationsOverviewCard extends HTMLElement {
     // follow-up): the badge alone doesn't say what to go check, only that
     // something needs confirming at trigger time.
     const runtimeConditions = (event.conditionSummaries || [])
-      .filter(item => item.runtime).map(item => item.text);
+      .filter(item => item.runtime)
+      // #15: strip the entity-highlight markers (U+E000/U+E001); in a plain
+      // title="" attribute they would render as <?> glyphs.
+      .map(item => String(item.text ?? "").replace(/[\uE000\uE001]/g, ""));
     const certaintyTooltip = stateDependent && runtimeConditions.length
       ? this._t("certainty_state_tooltip", { list: runtimeConditions.join(", ") })
       : "";
@@ -6124,6 +6127,19 @@ class AutomationsOverviewCard extends HTMLElement {
 
         button.nextPlanned {
           cursor: pointer;
+        }
+
+        /* #14: draw the keyboard focus ring around the whole banner,
+           not only around the left-hand button. */
+        button.nextPlanned:focus,
+        button.nextPlanned:focus-visible,
+        .nextPlannedChevronButton:focus,
+        .nextPlannedChevronButton:focus-visible {
+          outline: none;
+        }
+        .nextPlannedShell:has(:focus-visible) {
+          outline: 2px solid var(--primary-color);
+          outline-offset: -2px;
         }
 
         .nextPlannedIcon {
