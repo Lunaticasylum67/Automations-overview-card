@@ -18,6 +18,8 @@ Past runs are read from automation traces. Future entries are predictions based 
 - A list of automations with only conditional (unpredictable) future triggers, collapsible.
 - Per-status filters and a legend, so you can hide statuses you don't care about.
 - Toggle between friendly names and entity IDs for the entities involved.
+- Optional filters by area, label and automation category (YAML or visual editor), applied to the timeline and to the next-planned banner.
+- Visual card editor in the Home Assistant dashboard UI.
 - Resolves `device_id`-based action targets (e.g. `camera.snapshot` targeting a device) back to a readable entity name, using the device/entity registries.
 - Built-in French / English UI, auto-detected from your Home Assistant profile language, with a manual override.
 
@@ -73,6 +75,10 @@ That's it — the card automatically discovers every `automation.*` entity. Use 
 | `action_details` | boolean | `true` | Fetch and display the detailed trigger/action text for each run (one extra trace lookup per run). Disable for a lighter/faster card if you only need the status colors. |
 | `exclude` | list of strings | `[]` | Entity IDs of automations to hide from the card. |
 | `merge_seconds` | number | `45` | Runs of the same automation within this many seconds of each other are merged into a single timeline entry with a counter. |
+| `filter_areas` | string or list | none | Only show automations assigned to one of these areas. Accepts area IDs, names or aliases (case-insensitive). If the automation has no area of its own, the area of its device is used. |
+| `filter_labels` | string or list | none | Only show automations carrying at least one of these labels (label IDs or names). |
+| `filter_categories` | string or list | none | Only show automations in one of these automation categories (category IDs or names). |
+| `show_filter_settings` | boolean | `true` | Show the area / label / category chips in the card's "Legend & filters" panel so users can change the filter from the card itself. Set to `false` to lock the dashboard on the YAML filters (kiosk / read-only dashboards). |
 
 Example with options:
 
@@ -109,6 +115,25 @@ display_mode: next_planned_details
 
 The detailed view describes the automation configuration. Its actions have not yet been executed. Automations whose future trigger time cannot be determined are not candidates for the next-planned display.
 
+## Filtering by area, label or category
+
+Use `filter_areas`, `filter_labels` and `filter_categories` (or the matching fields of the visual editor) to restrict the card to some automations — for example an irrigation dashboard:
+
+```yaml
+type: custom:automations-overview-card
+title: Irrigation
+filter_areas:
+  - Garden
+filter_labels:
+  - irrigation
+```
+
+- Values within one criterion are combined with **OR**; the criteria themselves are combined with **AND** (an automation must match every criterion that is set).
+- A single value or a comma-separated string is accepted as well as a list.
+- The same filters can be changed from the card itself, in the **Legend & filters** panel (area / label / category chips). That choice is remembered per card title in the browser's local storage, so each device keeps its own filter; it takes priority over the YAML values on that device until you press **Reset**. Set `show_filter_settings: false` to hide these chips and lock the card on its YAML filters.
+- Filters apply to the whole card: the timeline, the conditional list and the next-planned banner.
+- Automations that are not in the entity registry (YAML automations without an `id`) have no area, label or category, so they are hidden as soon as a filter is set.
+
 ## Prediction support and limits
 
 - Schedule definitions are read using Home Assistant's read-only `schedule.get_schedule` action, for both UI and YAML schedules. If the action or entity is unavailable, predictions remain conditional.
@@ -116,6 +141,7 @@ The detailed view describes the automation configuration. Its actions have not y
 - Native schedules spanning midnight use two blocks, such as Monday 22:00–24:00 and Tuesday 00:00–02:00. Continuous blocks do not produce a false state off/on transition at midnight.
 - State-based predictions assume the current value remains unchanged. The card recalculates when a tracked entity's state changes; values are compared as-is and never extrapolated into the future (a sensor holding a string is matched against the configured value, not forecast). Jinja/template conditions remain conditional.
 - Nonzero `for` durations, attribute triggers, indirect schedule targets (area/device/floor/label), and native `first` / `all` trigger behaviors remain conditional.
+- `timer.finished` triggers are predicted at the timer's `finishes_at` while the timer is `active` (a fixed `for` delay is added). Idle or paused timers, and several timers with `first`/`last` behavior, remain conditional.
 - `sun.dusk` uses a distinct calculation for each day and twilight type, including the configured location and elevation. Offsets can cross midnight. Civil `next_dusk` is used when applicable; missing solar data stays conditional.
 - `sun.elevation_crossed_threshold` predictions support `above`, `below`, `between`, and `outside` thresholds, including a fixed `for` duration. Each bound can be a fixed number or an entity's current value, read as a live snapshot and tracked as a prediction dependency — same mechanism as other state-based predictions.
 - After editing schedule blocks without changing their published state or attributes, reload the card to reread the definitions.
