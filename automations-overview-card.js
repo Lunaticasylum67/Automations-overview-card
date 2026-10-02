@@ -1,10 +1,10 @@
-/* Automations Overview Card - V40 - normalize Home Assistant end-of-day schedule times (issue #10); based on V39 */
+/* Automations Overview Card - V44 - clearer "Condition to confirm" certainty badge with a tooltip naming the entities involved (issue #9 follow-up); based on V43 */
 // Single source of truth for the version shown in the console log and in the
 // "Legend & filters" panel — update this alongside the header comment above
 // whenever the version changes, so a user can always tell which build is
 // actually running (mismatched cached files have been the cause of more than
 // one "fix doesn't work" report).
-const CARD_VERSION = "V40";
+const CARD_VERSION = "V44";
 /* ==========================================================
    V25 - TRADUCTIONS / TRANSLATIONS
    ========================================================== */
@@ -108,7 +108,37 @@ const AUTOMATION_TIMELINE_I18N = {
     next_planned_none: "Aucune automation prévue",
     next_planned_at: "{name} à {time}",
     next_planned_tomorrow_at: "{name} demain à {time}",
-    relative_now: "maintenant"
+    relative_now: "maintenant",
+    display_mode_title: "Affichage :",
+    display_mode_full: "Chronologie complète",
+    display_mode_compact: "Prochaine prévue — compact",
+    display_mode_detailed: "Prochaine prévue — détaillé",
+    certainty_planned: "Prévu",
+    certainty_state: "Condition à confirmer",
+    certainty_state_tooltip: "L'heure est fiable, mais l'automation dépend aussi de l'état actuel de : {list}",
+    planned_trigger: "Déclencheur prévu",
+    planned_conditions: "Conditions",
+    planned_actions: "Actions configurées",
+    no_conditions: "Aucune condition",
+    no_actions: "Aucune action configurée",
+    configured_action: "Action configurée",
+    configured_condition: "Condition configurée",
+    action_delay: "Attendre {value}",
+    action_choose: "Choix conditionnel",
+    action_if: "Branchement conditionnel",
+    action_then: "Alors",
+    action_else: "Sinon",
+    action_otherwise: "Sinon",
+    action_repeat: "Répétition",
+    action_parallel: "Actions parallèles",
+    action_wait: "Attendre une condition",
+    action_event: "Déclencher l’événement {value}",
+    state_condition: "{name} = {value}",
+    time_condition: "Plage horaire",
+    settings_title: "Filtres et réglages",
+    configured_actions_note: "Actions configurées, pas encore exécutées",
+    next_planned_time: "à {time}",
+    next_planned_tomorrow_time: "demain à {time}"
   },
 
   en: {
@@ -208,7 +238,37 @@ const AUTOMATION_TIMELINE_I18N = {
     next_planned_none: "No planned automation",
     next_planned_at: "{name} at {time}",
     next_planned_tomorrow_at: "{name} tomorrow at {time}",
-    relative_now: "now"
+    relative_now: "now",
+    display_mode_title: "Display:",
+    display_mode_full: "Full timeline",
+    display_mode_compact: "Next planned — compact",
+    display_mode_detailed: "Next planned — detailed",
+    certainty_planned: "Planned",
+    certainty_state: "Condition to confirm",
+    certainty_state_tooltip: "The time is reliable, but the automation also depends on the current state of: {list}",
+    planned_trigger: "Planned trigger",
+    planned_conditions: "Conditions",
+    planned_actions: "Configured actions",
+    no_conditions: "No conditions",
+    no_actions: "No configured actions",
+    configured_action: "Configured action",
+    configured_condition: "Configured condition",
+    action_delay: "Wait {value}",
+    action_choose: "Conditional choice",
+    action_if: "Conditional branch",
+    action_then: "Then",
+    action_else: "Else",
+    action_otherwise: "Otherwise",
+    action_repeat: "Repeat",
+    action_parallel: "Parallel actions",
+    action_wait: "Wait for a condition",
+    action_event: "Fire event {value}",
+    state_condition: "{name} = {value}",
+    time_condition: "Time window",
+    settings_title: "Filters & Settings",
+    configured_actions_note: "Configured actions, not yet executed",
+    next_planned_time: "at {time}",
+    next_planned_tomorrow_time: "tomorrow at {time}"
   }
 
 };
@@ -222,9 +282,25 @@ class AutomationsOverviewCard extends HTMLElement {
       merge_seconds: config.merge_seconds ?? 45,
       action_details: config.action_details !== false,
       show_next_planned: config.show_next_planned !== false,
+      show_compact_settings: config.show_compact_settings !== false,
       exclude: config.exclude || [],
       ...config
     };
+
+    const validDisplayModes = ["full", "next_planned", "next_planned_details"];
+    const configuredDisplayMode = validDisplayModes.includes(config.display_mode)
+      ? config.display_mode : "full";
+    this._displayModeStorageKey = `automations-overview-card.display_mode.${encodeURIComponent(this.config.title)}`;
+    let storedDisplayMode = null;
+    try {
+      storedDisplayMode = window.localStorage?.getItem(this._displayModeStorageKey) || null;
+    } catch (_) {
+      storedDisplayMode = null;
+    }
+    const initialDisplayMode = validDisplayModes.includes(storedDisplayMode)
+      ? storedDisplayMode : configuredDisplayMode;
+    this._displayMode = validDisplayModes.includes(this._displayMode)
+      ? this._displayMode : initialDisplayMode;
  
     this._dayOffset = 0;
     this._loadedFor = null;
@@ -234,7 +310,11 @@ class AutomationsOverviewCard extends HTMLElement {
     this._nextPlannedCandidates = [];
     this._conditionalsOpen = false;
     this._legendFiltersOpen = false;
- 
+    // Decoupled from _legendFiltersOpen: the inline cogwheel's small panel
+    // (display-mode selector only) must not also expand the unrelated
+    // Legend & filters section when both happen to be visible at once.
+    this._displayModeSettingsOpen = false;
+
     /*
      * V19 :
      * mode d'affichage des entités.
@@ -923,7 +1003,7 @@ class AutomationsOverviewCard extends HTMLElement {
 
         // V39 / issue #9: derive the next planned event independently of the
         // displayed day and of the legend's presentation-only filters.
-        if (config && this.config.show_next_planned) {
+        if (config && (this.config.show_next_planned || this._displayMode !== "full")) {
           for (const predictionDate of [nextToday, nextTomorrow]) {
             const predictionWindow = this._startEnd(predictionDate);
             const prediction = this._predict(config, predictionDate, state);
@@ -3842,6 +3922,140 @@ class AutomationsOverviewCard extends HTMLElement {
       this._oneConditionVerdict(condition, date, triggerId)));
   }
 
+  _conditionUsesRuntimeState(condition) {
+    if (!condition || typeof condition !== "object" || condition.enabled === false) return false;
+    let kind = condition.condition;
+    if (!kind) kind = ["and", "or", "not"].find(key => key in condition);
+    if (["and", "or", "not"].includes(kind)) {
+      return [].concat(condition.conditions ?? condition[kind] ?? [])
+        .some(child => this._conditionUsesRuntimeState(child));
+    }
+    const native = typeof kind === "string" && /^[a-z_]+\.is_(on|off)$/.test(kind);
+    if (kind !== "state" && !native) return false;
+    const ids = [].concat((native ? condition.target?.entity_id : condition.entity_id) ?? []);
+    return ids.some(id => typeof id === "string" && !id.startsWith("schedule."));
+  }
+
+  _plannedConditionSummaries(config) {
+    const conditions = [].concat(config.conditions ?? config.condition ?? []);
+    const summaries = [];
+    const visit = condition => {
+      if (!condition || typeof condition !== "object" || condition.enabled === false) return;
+      let kind = condition.condition;
+      if (!kind) kind = ["and", "or", "not"].find(key => key in condition);
+      if (["and", "or", "not"].includes(kind)) {
+        [].concat(condition.conditions ?? condition[kind] ?? []).forEach(visit);
+        return;
+      }
+      const native = typeof kind === "string" && /^[a-z_]+\.is_(on|off)$/.test(kind);
+      if (kind === "state" || native) {
+        const ids = [].concat((native ? condition.target?.entity_id : condition.entity_id) ?? []);
+        const wanted = native ? (kind.endsWith(".is_on") ? "on" : "off")
+          : [].concat(condition.state ?? []).join(" / ");
+        if (ids.length) {
+          ids.forEach(id => summaries.push({
+            text: this._t("state_condition", {
+              name: this._entityDisplayName(id), value: wanted || "?"
+            }),
+            runtime: typeof id === "string" && !id.startsWith("schedule.")
+          }));
+          return;
+        }
+      }
+      if (kind === "time") {
+        summaries.push({ text: this._t("time_condition"), runtime: false });
+        return;
+      }
+      if (kind === "trigger") return;
+      summaries.push({ text: this._t("configured_condition"), runtime: true });
+    };
+    conditions.forEach(visit);
+    return summaries;
+  }
+
+  _durationLabel(value) {
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return `${value} s`;
+    if (!value || typeof value !== "object") return "";
+    return [
+      [value.hours, "h"], [value.minutes, "min"], [value.seconds, "s"]
+    ].filter(([amount]) => Number(amount)).map(([amount, unit]) => `${amount} ${unit}`).join(" ");
+  }
+
+  _plannedActionSummaries(config) {
+    const actions = [].concat(config.actions ?? config.action ?? []);
+    const conditionText = conditions => {
+      const items = this._plannedConditionSummaries({ conditions });
+      return items.length ? items.map(item => item.text).join(" · ") : this._t("configured_condition");
+    };
+    const describe = (action, level = 0) => {
+      if (!action || action.enabled === false) return [];
+      const service = action.action || action.service;
+      if (typeof service === "string") {
+        try { return [{ text: this._formatService({ ...action, service }), level }]; }
+        catch (_) { return [{ text: this._humanizeService(service), level }]; }
+      }
+      if (action.delay !== undefined) {
+        return [{ text: this._t("action_delay", { value: this._durationLabel(action.delay) || "…" }), level }];
+      }
+      if (action.choose !== undefined) {
+        const result = [{ text: this._t("action_choose"), level, group: true }];
+        [].concat(action.choose || []).forEach((choice, index) => {
+          result.push({
+            text: `${index + 1}. ${conditionText(choice?.conditions ?? choice?.condition ?? [])}`,
+            level: level + 1,
+            branch: true
+          });
+          [].concat(choice?.sequence ?? []).forEach(child => result.push(...describe(child, level + 2)));
+        });
+        const fallback = action.default ?? action.otherwise;
+        if (fallback !== undefined) {
+          result.push({ text: this._t("action_otherwise"), level: level + 1, branch: true });
+          [].concat(fallback ?? []).forEach(child => result.push(...describe(child, level + 2)));
+        }
+        return result;
+      }
+      if (action.if !== undefined || action.then !== undefined) {
+        const result = [{
+          text: `${this._t("action_if")} — ${conditionText(action.if ?? action.conditions ?? [])}`,
+          level,
+          group: true
+        }];
+        if (action.then !== undefined) {
+          result.push({ text: this._t("action_then"), level: level + 1, branch: true });
+          [].concat(action.then ?? []).forEach(child => result.push(...describe(child, level + 2)));
+        }
+        if (action.else !== undefined) {
+          result.push({ text: this._t("action_else"), level: level + 1, branch: true });
+          [].concat(action.else ?? []).forEach(child => result.push(...describe(child, level + 2)));
+        }
+        return result;
+      }
+      if (action.repeat !== undefined) {
+        const result = [{ text: this._t("action_repeat"), level, group: true }];
+        [].concat(action.repeat?.sequence ?? []).forEach(child => result.push(...describe(child, level + 1)));
+        return result;
+      }
+      if (action.parallel !== undefined) {
+        const result = [{ text: this._t("action_parallel"), level, group: true }];
+        [].concat(action.parallel ?? []).forEach(child => result.push(...describe(child, level + 1)));
+        return result;
+      }
+      if (action.sequence !== undefined) {
+        return [].concat(action.sequence ?? []).flatMap(child => describe(child, level));
+      }
+      if (action.wait_template !== undefined || action.wait_for_trigger !== undefined) {
+        return [{ text: this._t("action_wait"), level }];
+      }
+      if (action.event !== undefined) {
+        return [{ text: this._t("action_event", { value: action.event }), level }];
+      }
+      return [{ text: this._t("configured_action"), level }];
+    };
+    return actions.filter(action => action && action.enabled !== false)
+      .flatMap(action => describe(action));
+  }
+
   _oneConditionVerdict(condition, date, triggerId) {
     if (!condition || typeof condition !== "object") return "uncertain";
     if (condition.enabled === false) return "ok";
@@ -3915,7 +4129,13 @@ class AutomationsOverviewCard extends HTMLElement {
     const uncertain = new Set();
     const add = (time, detail, triggerId) => {
       const verdict = this._conditionVerdict(config, time, triggerId);
-      if (verdict === "ok") events.push(this._futureEvent(time, state, detail));
+      if (verdict === "ok") events.push(this._futureEvent(time, state, detail, {
+        triggerId,
+        certainty: [].concat(config.conditions ?? config.condition ?? [])
+          .some(condition => this._conditionUsesRuntimeState(condition)) ? "state" : "planned",
+        conditionSummaries: this._plannedConditionSummaries(config),
+        actionSummaries: this._plannedActionSummaries(config)
+      }));
       else if (verdict === "uncertain") uncertain.add(this._t("condition_dependent"));
     };
     triggers.forEach((trigger, index) => {
@@ -4095,7 +4315,8 @@ class AutomationsOverviewCard extends HTMLElement {
   _futureEvent(
     dt,
     state,
-    detail
+    detail,
+    metadata = {}
   ) {
  
     return {
@@ -4114,7 +4335,9 @@ class AutomationsOverviewCard extends HTMLElement {
         state.entity_id,
  
       detail,
- 
+
+      ...metadata,
+
       count:
         1
     };
@@ -5135,12 +5358,32 @@ class AutomationsOverviewCard extends HTMLElement {
           </span>
  
         </div>
- 
+
       </div>
     `;
  
  
     return html;
+  }
+
+  _displayModeSelectorHtml() {
+    const options = [
+      ["full", "display_mode_full"],
+      ["next_planned", "display_mode_compact"],
+      ["next_planned_details", "display_mode_detailed"]
+    ];
+    return `
+      <label class="displayModeControl">
+        <span>${this._t("display_mode_title")}</span>
+        <select id="displayModeSelect">
+          ${options.map(([value, label]) => `
+            <option value="${value}" ${this._displayMode === value ? "selected" : ""}>
+              ${this._t(label)}
+            </option>
+          `).join("")}
+        </select>
+      </label>
+    `;
   }
  
  
@@ -5158,38 +5401,133 @@ class AutomationsOverviewCard extends HTMLElement {
     return formatter.format(Math.ceil(deltaSeconds / 86400), "day");
   }
 
-  _nextPlannedHtml(now) {
+  _nextPlannedHtml(now, mode = this._displayMode) {
     const event = (this._nextPlannedCandidates || []).find(candidate => candidate.time > now) ||
       (this._nextPlanned?.time > now ? this._nextPlanned : null);
     this._nextPlanned = event;
     if (!event || event.time <= now) {
+      const settings = this._compactSettingsHtml();
       return `
-        <div class="nextPlanned nextPlannedEmpty">
-          <ha-icon class="nextPlannedIcon" icon="mdi:clock-outline"></ha-icon>
-          <span>
-            <span class="nextPlannedLabel">${this._t("next_planned_label")}</span>
-            <span class="nextPlannedText">${this._t("next_planned_none")}</span>
-          </span>
+        <div class="nextPlannedShell ${mode === "next_planned_details" ? "detailed" : "compact"}">
+          <div class="nextPlannedHeader ${settings ? "hasSettings" : ""}">
+            <div class="nextPlanned nextPlannedEmpty">
+              <ha-icon class="nextPlannedIcon" icon="mdi:clock-outline"></ha-icon>
+              <span>
+                <span class="nextPlannedLabel">${this._t("next_planned_label")}</span>
+                <span class="nextPlannedText">${this._t("next_planned_none")}</span>
+              </span>
+            </div>
+            ${settings}
+          </div>
+          ${this._compactSettingsPanelHtml()}
         </div>
       `;
     }
     const tomorrow = new Date(this._todayStart());
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const key = this._dateKey(event.time) === this._dateKey(tomorrow)
+    const timeKey = this._dateKey(event.time) === this._dateKey(tomorrow)
+      ? "next_planned_tomorrow_time" : "next_planned_time";
+    const legacyKey = this._dateKey(event.time) === this._dateKey(tomorrow)
       ? "next_planned_tomorrow_at" : "next_planned_at";
-    const exact = this._t(key, { name: event.name, time: this._formatTime(event.time) });
+    const exactTime = this._t(timeKey, { time: this._formatTime(event.time) });
+    const accessibleExact = this._t(legacyKey, {
+      name: event.name, time: this._formatTime(event.time)
+    });
     const relative = this._relativePlannedTime(event.time, now);
+    const stateDependent = event.certainty === "state";
+    const certaintyLabel = this._t(stateDependent ? "certainty_state" : "certainty_planned");
+    // Names the exact condition entities behind "Condition to confirm" (issue #9
+    // follow-up): the badge alone doesn't say what to go check, only that
+    // something needs confirming at trigger time.
+    const runtimeConditions = (event.conditionSummaries || [])
+      .filter(item => item.runtime).map(item => item.text);
+    const certaintyTooltip = stateDependent && runtimeConditions.length
+      ? this._t("certainty_state_tooltip", { list: runtimeConditions.join(", ") })
+      : "";
+    const conditions = event.conditionSummaries?.length
+      ? event.conditionSummaries.map(item => `
+          <li class="${item.runtime ? "runtime" : "known"}">
+            <ha-icon icon="${item.runtime ? "mdi:help-circle-outline" : "mdi:check-circle-outline"}"></ha-icon>
+            <span>${this._escWithHighlight(item.text)}</span>
+          </li>`).join("")
+      : `<li class="known"><ha-icon icon="mdi:check-circle-outline"></ha-icon><span>${this._t("no_conditions")}</span></li>`;
+    const actions = event.actionSummaries?.length
+      ? event.actionSummaries.map((action, index) => {
+          const item = typeof action === "string" ? { text: action, level: 0 } : action;
+          return `<li class="${item.group ? "group" : ""} ${item.branch ? "branch" : ""}"
+            style="--action-level:${Math.max(0, Number(item.level) || 0)}">
+            <span class="actionNumber">${index + 1}</span>
+            <span>${this._escWithHighlight(item.text)}</span>
+          </li>`;
+        }).join("")
+      : `<li><span>${this._t("no_actions")}</span></li>`;
+    const details = mode === "next_planned_details" ? `
+      <div class="nextPlannedDetails">
+        <section>
+          <h3><ha-icon icon="mdi:lightning-bolt-outline"></ha-icon>${this._t("planned_trigger")}</h3>
+          <p>${this._esc(event.detail || this._t("dynamic_trigger"))}</p>
+        </section>
+        <section>
+          <h3><ha-icon icon="mdi:format-list-checks"></ha-icon>${this._t("planned_conditions")}</h3>
+          <ul class="conditionSummary">${conditions}</ul>
+        </section>
+        <section>
+          <h3><ha-icon icon="mdi:play-outline"></ha-icon>${this._t("planned_actions")}</h3>
+          <ol class="actionSummary">${actions}</ol>
+        </section>
+      </div>
+      <div class="configuredActionsNote">
+        <ha-icon icon="mdi:information-outline"></ha-icon>
+        ${this._t("configured_actions_note")}
+      </div>` : "";
+    const settings = this._compactSettingsHtml();
     return `
-      <button class="nextPlanned" data-entity="${this._esc(event.entity_id)}">
-        <ha-icon class="nextPlannedIcon" icon="mdi:clock-outline"></ha-icon>
-        <span>
-          <span class="nextPlannedLabel">${this._t("next_planned_label")}</span>
-          <span class="nextPlannedText">
-            ${this._esc(exact)} <span class="nextPlannedRelative">— ${this._esc(relative)}</span>
-          </span>
-        </span>
+      <div class="nextPlannedShell ${mode === "next_planned_details" ? "detailed" : "compact"}">
+        <div class="nextPlannedHeader ${settings ? "hasSettings" : ""}">
+          <button class="nextPlanned" data-entity="${this._esc(event.entity_id)}"
+            aria-label="${this._esc(`${accessibleExact} — ${relative} — ${certaintyLabel}`)}">
+            <ha-icon class="nextPlannedIcon" icon="mdi:clock-outline"></ha-icon>
+            <span class="nextPlannedIdentity">
+              <span class="nextPlannedLabel">${this._t("next_planned_label")}</span>
+              <span class="nextPlannedName">${this._esc(event.name)}</span>
+            </span>
+            <span class="nextPlannedExact">${this._esc(exactTime)}</span>
+            <span class="nextPlannedRelative">${this._esc(relative)}</span>
+            <span class="certaintyBadge ${stateDependent ? "state" : "planned"}"
+              ${certaintyTooltip ? `title="${this._esc(certaintyTooltip)}"` : ""}>
+              <ha-icon icon="${stateDependent ? "mdi:help-circle-outline" : "mdi:check-circle-outline"}"></ha-icon>
+              ${certaintyLabel}
+            </span>
+          </button>
+          ${settings}
+          <button class="nextPlannedChevronButton" data-entity="${this._esc(event.entity_id)}"
+            title="${this._esc(event.name)}" aria-label="${this._esc(accessibleExact)}">
+            <ha-icon class="nextPlannedChevron" icon="mdi:chevron-right"></ha-icon>
+          </button>
+        </div>
+        ${details}
+        ${this._compactSettingsPanelHtml()}
+      </div>
+    `;
+  }
+
+  _compactSettingsHtml() {
+    // Shown in every mode (issue #9 follow-up): "full" used to hide this
+    // toggle entirely, leaving the display-mode selector reachable only by
+    // opening the unrelated Legend & filters panel once a user landed on
+    // "full" (by choice or a stray click) — a real dead end users got stuck
+    // in. The inline cogwheel is now available everywhere show_compact_settings allows it.
+    if (!this.config.show_compact_settings) return "";
+    return `
+      <button id="compactSettingsToggle" class="compactSettingsToggle" title="${this._t("settings_title")}">
+        <ha-icon icon="mdi:cog-outline"></ha-icon>
       </button>
     `;
+  }
+
+  _compactSettingsPanelHtml() {
+    if (!this.config.show_compact_settings || !this._displayModeSettingsOpen) return "";
+    return `<div class="compactSettingsPanel">${this._displayModeSelectorHtml()}</div>`;
   }
 
   _render() {
@@ -5232,8 +5570,10 @@ class AutomationsOverviewCard extends HTMLElement {
     const now =
       new Date();
 
-    const nextPlannedHtml = this.config.show_next_planned
-      ? this._nextPlannedHtml(now)
+    const simplified = this._displayMode !== "full";
+
+    const nextPlannedHtml = (this.config.show_next_planned || simplified)
+      ? this._nextPlannedHtml(now, this._displayMode)
       : "";
  
  
@@ -5465,18 +5805,32 @@ class AutomationsOverviewCard extends HTMLElement {
           margin-bottom: 12px;
         }
 
+        .nextPlannedShell {
+          margin: 0 0 14px;
+          border-radius: 10px;
+          background: color-mix(in srgb, var(--primary-color) 10%, var(--card-background-color));
+          overflow: hidden;
+        }
+
+        .nextPlannedHeader {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 34px;
+          align-items: stretch;
+        }
+        .nextPlannedHeader.hasSettings {
+          grid-template-columns: minmax(0, 1fr) 38px 34px;
+        }
+
         .nextPlanned {
           display: grid;
-          grid-template-columns: 24px 1fr;
-          gap: 10px;
+          grid-template-columns: 24px minmax(150px, 1fr) auto auto auto;
+          gap: 12px;
           align-items: center;
           width: 100%;
           box-sizing: border-box;
-          margin: 0 0 14px;
           padding: 12px 13px;
           border: 0;
-          border-radius: 10px;
-          background: color-mix(in srgb, var(--primary-color) 10%, var(--card-background-color));
+          background: transparent;
           color: var(--primary-text-color);
           text-align: left;
         }
@@ -5490,7 +5844,8 @@ class AutomationsOverviewCard extends HTMLElement {
         }
 
         .nextPlannedLabel,
-        .nextPlannedText {
+        .nextPlannedName,
+        .nextPlannedExact {
           display: block;
         }
 
@@ -5500,12 +5855,150 @@ class AutomationsOverviewCard extends HTMLElement {
           margin-bottom: 3px;
         }
 
-        .nextPlannedText {
+        .nextPlannedName {
+          font-weight: 600;
+        }
+
+        .nextPlannedExact,
+        .nextPlannedRelative {
+          white-space: nowrap;
+        }
+
+        .nextPlannedExact {
           font-weight: 600;
         }
 
         .nextPlannedRelative {
           color: var(--primary-color);
+          font-weight: 500;
+        }
+
+        .certaintyBadge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 5px 8px;
+          border-radius: 999px;
+          white-space: nowrap;
+          font-size: .75rem;
+          font-weight: 600;
+        }
+
+        .certaintyBadge ha-icon { --mdc-icon-size: 16px; }
+        .certaintyBadge.planned {
+          color: var(--success-color, #2e7d32);
+          background: color-mix(in srgb, var(--success-color, #2e7d32) 13%, transparent);
+        }
+        .certaintyBadge.state {
+          color: var(--warning-color, #ef6c00);
+          background: color-mix(in srgb, var(--warning-color, #ef6c00) 13%, transparent);
+        }
+
+        .nextPlannedChevronButton,
+        .compactSettingsToggle {
+          display: grid;
+          place-items: center;
+          min-width: 0;
+          padding: 0;
+          border: 0;
+          background: transparent;
+          color: var(--secondary-text-color);
+          cursor: pointer;
+        }
+        .nextPlannedChevronButton:hover,
+        .compactSettingsToggle:hover {
+          background: color-mix(in srgb, var(--primary-text-color) 7%, transparent);
+        }
+        .nextPlannedChevronButton ha-icon { --mdc-icon-size: 22px; }
+        .nextPlannedChevron { color: var(--secondary-text-color); }
+
+        .nextPlannedDetails {
+          display: grid;
+          grid-template-columns: minmax(130px, .8fr) minmax(180px, 1.1fr) minmax(190px, 1.2fr);
+          border-top: 1px solid var(--divider-color);
+        }
+
+        .nextPlannedDetails section {
+          min-width: 0;
+          padding: 13px 15px;
+        }
+
+        .nextPlannedDetails section + section { border-left: 1px solid var(--divider-color); }
+        .nextPlannedDetails h3 {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin: 0 0 9px;
+          font-size: .78rem;
+        }
+        .nextPlannedDetails h3 ha-icon { --mdc-icon-size: 17px; color: var(--primary-color); }
+        .nextPlannedDetails p,
+        .nextPlannedDetails ul,
+        .nextPlannedDetails ol { margin: 0; padding: 0; font-size: .8rem; }
+        .conditionSummary,
+        .actionSummary { list-style: none; }
+        .conditionSummary li,
+        .actionSummary li {
+          display: flex;
+          align-items: flex-start;
+          gap: 6px;
+          margin: 5px 0;
+        }
+        .actionSummary li {
+          padding-left: calc(var(--action-level, 0) * 14px);
+        }
+        .actionSummary li.group { font-weight: 600; }
+        .actionSummary li.branch { color: var(--secondary-text-color); }
+        .conditionSummary ha-icon { --mdc-icon-size: 16px; flex: 0 0 auto; }
+        .conditionSummary .known ha-icon { color: var(--success-color, #2e7d32); }
+        .conditionSummary .runtime ha-icon { color: var(--warning-color, #ef6c00); }
+        .actionNumber {
+          display: inline-grid;
+          place-items: center;
+          min-width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: var(--secondary-background-color);
+          color: var(--secondary-text-color);
+          font-size: .68rem;
+        }
+        .configuredActionsNote {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 9px 15px;
+          border-top: 1px solid var(--divider-color);
+          color: var(--secondary-text-color);
+          font-size: .72rem;
+        }
+        .configuredActionsNote ha-icon { --mdc-icon-size: 16px; }
+
+        .compactSettingsToggle {
+          width: 38px;
+        }
+        .compactSettingsToggle ha-icon { --mdc-icon-size: 18px; }
+        .compactSettingsPanel {
+          padding: 11px 13px;
+          border-top: 1px solid var(--divider-color);
+          background: var(--card-background-color);
+        }
+        .displayModeControl {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          gap: 12px;
+          margin-top: 10px;
+          color: var(--primary-text-color);
+          font-size: .8rem;
+        }
+        .displayModeControl select {
+          width: min(280px, 100%);
+          min-width: 190px;
+          padding: 6px 8px;
+          border: 1px solid var(--divider-color);
+          border-radius: 7px;
+          background: var(--card-background-color);
+          color: var(--primary-text-color);
         }
  
  
@@ -6597,6 +7090,13 @@ class AutomationsOverviewCard extends HTMLElement {
         @media (
           max-width: 650px
         ) {
+
+          .nextPlannedDetails { grid-template-columns: 1fr 1fr; }
+          .nextPlannedDetails section:nth-child(3) {
+            grid-column: 1 / 3;
+            border-left: 0;
+            border-top: 1px solid var(--divider-color);
+          }
  
           .legendFilterRow {
  
@@ -6651,6 +7151,25 @@ class AutomationsOverviewCard extends HTMLElement {
         @media (
           max-width: 480px
         ) {
+
+          .nextPlanned {
+            grid-template-columns: 22px minmax(0, 1fr);
+          }
+          .nextPlannedExact,
+          .nextPlannedRelative,
+          .certaintyBadge {
+            grid-column: 2;
+            justify-self: start;
+          }
+          .nextPlannedDetails { grid-template-columns: 1fr; }
+          .nextPlannedDetails section,
+          .nextPlannedDetails section:nth-child(3) {
+            grid-column: 1;
+            border-left: 0;
+          }
+          .nextPlannedDetails section + section { border-top: 1px solid var(--divider-color); }
+          .displayModeControl { align-items: stretch; flex-direction: column; }
+          .displayModeControl select { width: 100%; min-width: 0; }
  
           .legendFilterRow {
  
@@ -6694,18 +7213,20 @@ class AutomationsOverviewCard extends HTMLElement {
  
       <ha-card>
  
-        <div class="wrap">
- 
- 
-          <div class="title">
- 
+        <div class="wrap ${simplified ? "simplified" : ""}">
+
+          ${simplified ? `
+            ${nextPlannedHtml}
+          ` : `
+            <div class="title">
+
             ${this._esc(
               this.config.title
             )}
- 
-          </div>
 
-          ${nextPlannedHtml}
+            </div>
+
+            ${nextPlannedHtml}
  
  
           <div class="tabs">
@@ -6754,7 +7275,8 @@ class AutomationsOverviewCard extends HTMLElement {
           ${conditionalHtml}
  
  
-          ${empty}
+            ${empty}
+          `}
  
  
         </div>
@@ -6797,6 +7319,46 @@ class AutomationsOverviewCard extends HTMLElement {
         "click",
         () => this._openAutomation(nextPlannedButton.dataset.entity)
       );
+    }
+
+    const nextPlannedChevronButton =
+      this.shadowRoot.querySelector("button.nextPlannedChevronButton");
+    if (nextPlannedChevronButton) {
+      nextPlannedChevronButton.addEventListener(
+        "click",
+        () => this._openAutomation(nextPlannedChevronButton.dataset.entity)
+      );
+    }
+
+    const compactSettingsToggle = this.shadowRoot.querySelector("#compactSettingsToggle");
+    if (compactSettingsToggle) {
+      compactSettingsToggle.addEventListener("click", event => {
+        event.stopPropagation();
+        this._displayModeSettingsOpen = !this._displayModeSettingsOpen;
+        this._render();
+      });
+    }
+
+    const displayModeSelect = this.shadowRoot.querySelector("#displayModeSelect");
+    if (displayModeSelect) {
+      displayModeSelect.addEventListener("change", () => {
+        const mode = displayModeSelect.value;
+        if (!["full", "next_planned", "next_planned_details"].includes(mode)) return;
+        this._displayMode = mode;
+        this.config.display_mode = mode;
+        try {
+          window.localStorage?.setItem(this._displayModeStorageKey, mode);
+        } catch (_) {
+          // Local storage can be unavailable in restricted browser contexts.
+        }
+        this._displayModeSettingsOpen = false;
+        if (mode !== "full" && !this._nextPlannedCandidates.length) {
+          this._loadedFor = null;
+          this._load();
+        } else {
+          this._render();
+        }
+      });
     }
  
  
