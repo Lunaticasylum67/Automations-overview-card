@@ -1,4 +1,4 @@
-/* Automations Overview Card - V47 (1.1.3) - fixes #16 (relative time rounded to nearest) + PR #17 audit fixes: refresh on new runs, all run outcomes, all action targets, more action labels/values, persisted + configurable status filters, trigger on blocked rows, trace cache, cheaper hass updates, lighter periodic render, row opens its trace, earlier days, live blockers for unpredictable automations, admin notice; based on V46 (1.1.2) */
+/* Automations Overview Card - V47 (1.1.3) - next-planned banner: time/delay right after the name; no step numbers in configured actions; unresolved templates shown as "computed at run time"; fixes #16 (relative time rounded to nearest); PR #17 audit fixes: refresh on new runs, all run outcomes, all action targets, more action labels/values, persisted + configurable status filters, trigger on blocked rows, trace cache, cheaper hass updates, lighter periodic render, optional row_click: trace, earlier days, live blockers for unpredictable automations, admin notice; based on V46 (1.1.2) */
 // Single source of truth for the version shown in the console log and in the
 // "Legend & filters" panel — update this alongside the header comment above
 // whenever the version changes, so a user can always tell which build is
@@ -37,6 +37,7 @@ const AUTOMATION_TIMELINE_I18N = {
     action_enabled: "Activ\u00e9",
     action_disabled: "D\u00e9sactiv\u00e9",
     action_option_selected: "Option s\u00e9lectionn\u00e9e",
+    action_value_computed: "(calcul\u00e9 \u00e0 l'ex\u00e9cution)",
     action_value_set: "Valeur r\u00e9gl\u00e9e",
     action_temperature_set: "Temp\u00e9rature r\u00e9gl\u00e9e",
     action_hvac_mode_set: "Mode r\u00e9gl\u00e9",
@@ -206,6 +207,7 @@ const AUTOMATION_TIMELINE_I18N = {
     action_enabled: "Enabled",
     action_disabled: "Disabled",
     action_option_selected: "Option selected",
+    action_value_computed: "(computed at run time)",
     action_value_set: "Value set",
     action_temperature_set: "Temperature set",
     action_hvac_mode_set: "Mode set",
@@ -3734,6 +3736,17 @@ class AutomationsOverviewCard extends HTMLElement {
     }
  
  
+    // Unresolved Jinja (variables computed at run time): show a readable
+    // label instead of the raw {{ ... }} / {% ... %} text.
+    if (
+      typeof value === "string" &&
+      (value.includes("{{") || value.includes("{%"))
+    ) {
+      value = this._t("action_value_computed");
+      suffix = "";
+    }
+
+
     if (
       friendlyTarget &&
       value !== undefined
@@ -6025,11 +6038,10 @@ class AutomationsOverviewCard extends HTMLElement {
           </li>`).join("")
       : `<li class="known"><ha-icon icon="mdi:check-circle-outline"></ha-icon><span>${this._t("no_conditions")}</span></li>`;
     const actions = event.actionSummaries?.length
-      ? event.actionSummaries.map((action, index) => {
+      ? event.actionSummaries.map(action => {
           const item = typeof action === "string" ? { text: action, level: 0 } : action;
           return `<li class="${item.group ? "group" : ""} ${item.branch ? "branch" : ""}"
             style="--action-level:${Math.max(0, Number(item.level) || 0)}">
-            <span class="actionNumber">${index + 1}</span>
             <span>${this._escWithHighlight(item.text)}</span>
           </li>`;
         }).join("")
@@ -6396,7 +6408,8 @@ class AutomationsOverviewCard extends HTMLElement {
 
         .nextPlanned {
           display: grid;
-          grid-template-columns: 24px minmax(150px, 1fr) auto auto auto;
+          grid-template-columns: 24px minmax(60px, max-content) auto auto auto;
+          justify-content: start;
           gap: 12px;
           align-items: center;
           width: 100%;
