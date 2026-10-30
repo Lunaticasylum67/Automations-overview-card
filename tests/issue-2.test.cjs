@@ -29,7 +29,7 @@ test('300 independent reference cases match Astral 3.2 within 2 milliseconds', t
   const c=card(); let max=0, absent=0;
   for(const fixture of reference.cases){
     const observer={latitude:fixture.latitude,longitude:fixture.longitude,elevation:fixture.elevation};
-    const actual=c._astralDuskUTC(new Date(fixture.day+'T00:00:00Z'),observer,fixture.depression);
+    const actual=c._astralTransitUTC(new Date(fixture.day+'T00:00:00Z'),observer,fixture.depression);
     if(fixture.expected===null){assert.equal(actual,null,JSON.stringify(fixture));absent++;}
     else {
       const error=Math.abs(+actual-Date.parse(fixture.expected));

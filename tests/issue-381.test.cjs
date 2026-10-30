@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 process.env.TZ = 'UTC';
 let Card;
-vm.runInNewContext(fs.readFileSync('/workspace/scratch/6b48694f6afd/Automations-overview-card-V38.1.js', 'utf8'), {
+vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname, '..', 'automations-overview-card.js'), 'utf8'), {
   HTMLElement: class {}, window: {}, console,
   customElements: {get: () => false, define: (_, value) => { Card = value; }}
 });

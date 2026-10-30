@@ -167,7 +167,7 @@ node --check automations-overview-card.js
 node --test tests/*.test.cjs
 ```
 
-The 74 automated tests include 300 reference comparisons against Astral 3.2. They use a simulated Home Assistant API; validation on a live Home Assistant installation is still requested.
+The 69 automated tests include 300 reference comparisons against Astral 3.2. They use a simulated Home Assistant API; validation on a live Home Assistant installation is still requested.
 
 ## Notes
 
