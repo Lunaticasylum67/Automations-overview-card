@@ -1,4 +1,4 @@
-/* Automations Overview Card - V47 - audit fixes: refresh on new runs, all run outcomes, all action targets, more action labels/values, persisted + configurable status filters, trigger on blocked rows, trace cache, cheaper hass updates, lighter periodic render, row opens its trace, earlier days, live blockers for unpredictable automations, admin notice; based on V46 (1.1.2) */
+/* Automations Overview Card - V47 (1.1.3) - fixes #16 (relative time rounded to nearest) + PR #17 audit fixes: refresh on new runs, all run outcomes, all action targets, more action labels/values, persisted + configurable status filters, trigger on blocked rows, trace cache, cheaper hass updates, lighter periodic render, row opens its trace, earlier days, live blockers for unpredictable automations, admin notice; based on V46 (1.1.2) */
 // Single source of truth for the version shown in the console log and in the
 // "Legend & filters" panel — update this alongside the header comment above
 // whenever the version changes, so a user can always tell which build is
@@ -1529,28 +1529,6 @@ class AutomationsOverviewCard extends HTMLElement {
     return trace;
   }
 
-  async _getTraceUncached(
-    itemId,
-    runId
-  ) {
- 
-    return await this._hass.callWS({
- 
-      type:
-        "trace/get",
- 
-      domain:
-        "automation",
- 
-      item_id:
-        itemId,
- 
-      run_id:
-        runId
-    });
-  }
- 
- 
   /* ==========================================================
      ANALYSE DES TRACES
      ========================================================== */
@@ -5987,9 +5965,10 @@ class AutomationsOverviewCard extends HTMLElement {
     if (deltaSeconds < 30) return this._t("relative_now");
     const language = this._hass.locale?.language || this._lang();
     const formatter = new Intl.RelativeTimeFormat(language, { numeric: "always" });
-    if (deltaSeconds < 3600) return formatter.format(Math.ceil(deltaSeconds / 60), "minute");
-    if (deltaSeconds < 86400) return formatter.format(Math.ceil(deltaSeconds / 3600), "hour");
-    return formatter.format(Math.ceil(deltaSeconds / 86400), "day");
+    // Issue #16 : round to nearest (ceil showed "in 2 hours" for 1 h 01 min).
+    if (deltaSeconds < 3600) return formatter.format(Math.max(1, Math.round(deltaSeconds / 60)), "minute");
+    if (deltaSeconds < 86400) return formatter.format(Math.max(1, Math.round(deltaSeconds / 3600)), "hour");
+    return formatter.format(Math.max(1, Math.round(deltaSeconds / 86400)), "day");
   }
 
   _nextPlannedHtml(now, mode = this._displayMode) {
@@ -8101,8 +8080,8 @@ class AutomationsOverviewCard extends HTMLElement {
         button.addEventListener(
           "click",
           () => {
-            // V47 : a past run opens its own trace (row_click: more-info keeps the old behaviour).
-            if (button.dataset.run && button.dataset.item && this.config.row_click !== "more-info") {
+            // V47 : with row_click: trace, a past run opens its own trace (default: unchanged behaviour).
+            if (button.dataset.run && button.dataset.item && this.config.row_click === "trace") {
               this._openTrace(button.dataset.item, button.dataset.run);
               return;
             }
