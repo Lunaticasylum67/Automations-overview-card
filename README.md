@@ -8,25 +8,27 @@ Past runs are read from automation traces. Future entries are predictions based 
 
 ## Features
 
-- Timeline view per automation entity, grouped by day (yesterday / today / tomorrow), with day navigation.
-- For each run: the trigger that fired it, the action(s) that were actually executed, or the reason it was skipped (condition not met).
+- Timeline view per automation entity, grouped by day (yesterday / today / tomorrow), with day navigation and a "‹" tab to go back to earlier days (up to 30 days, within the traces Home Assistant still stores).
+- New runs appear without reloading the page.
+- For each run: the trigger that fired it, the action(s) that were actually executed (all targets of an action are listed), or the reason it was skipped (condition not met, or the automation was already running — `single` / `max` mode). Interrupted (`restart`) and stopped runs carry a note.
 - Status color-coding: done, skipped, no action, error, running, planned, conditional (unpredictable future trigger).
 - A "planned" lane for supported time / sun / time-pattern triggers, schedule state transitions and native schedule start/end triggers, plus `sun.dusk` (civil, nautical, astronomical; before/after offsets).
 - Three display modes: the complete timeline, a compact next-planned view, or a detailed next-planned view showing the trigger, conditions, and configured actions.
 - The next-planned views show the exact execution time, a live relative delay, and a certainty indicator (`Planned` or `Condition to confirm`, the latter with a tooltip naming the entities involved).
 - Schedule conditions are checked at the predicted trigger time; other `state` conditions (any domain) use their current value, including nested AND/OR/NOT conditions.
-- A list of automations with only conditional (unpredictable) future triggers, collapsible.
-- Per-status filters and a legend, so you can hide statuses you don't care about.
+- A list of automations with only conditional (unpredictable) future triggers, collapsible, showing which of their conditions are blocking right now.
+- Per-status filters and a legend, so you can hide statuses you don't care about. The choice is remembered per card title on each device, and `default_filters` sets the starting point.
 - Toggle between friendly names and entity IDs for the entities involved.
 - Optional filters by area, label and automation category (YAML or visual editor), applied to the timeline and to the next-planned banner.
 - Visual card editor in the Home Assistant dashboard UI.
 - Resolves `device_id`-based action targets (e.g. `camera.snapshot` targeting a device) back to a readable entity name, using the device/entity registries.
 - Built-in French / English UI, auto-detected from your Home Assistant profile language, with a manual override.
+- Settings cogwheel with per-device choices: display mode, what a click on a row does, and how often blocked runs are looked for (see [Settings cogwheel](#settings-cogwheel)).
 
 ## Requirements
 
 - Home Assistant, recent enough to support custom Lovelace card resources (any reasonably current version works).
-- The user viewing the dashboard needs to be a Home Assistant **administrator**. The card reads the device and entity registries (to resolve `device_id` targets) and automation traces, both of which require admin-level websocket access. Non-admin users will see the card fail to load its data.
+- The user viewing the dashboard needs to be a Home Assistant **administrator**. The card reads the device and entity registries (to resolve `device_id` targets) and automation traces, both of which require admin-level websocket access. Non-admin users see a short notice instead of the timeline.
 
 ## Installation
 
@@ -68,7 +70,7 @@ That's it — the card automatically discovers every `automation.*` entity. Use 
 | `language` | string | auto | Force the UI language (`fr` or `en`). By default the card follows your Home Assistant profile language and falls back to English if unsupported. |
 | `entity_name_mode` | string | `friendly` | Initial entity display mode: `friendly` (friendly name) or `entity_id`. Can also be toggled from the card UI. |
 | `display_mode` | string | `full` | Display mode: `full`, `next_planned`, or `next_planned_details`. It can also be changed from the card's own settings cogwheel, in any mode. |
-| `show_compact_settings` | boolean | `true` | Show the settings cogwheel that lets you switch display mode directly from the card, in any mode. Set to `false` to hide it — the user will then be unable to change the view themselves, and will only see the mode set by `display_mode` (or the one already stored for them). Useful for a read-only or kiosk dashboard. |
+| `show_compact_settings` | boolean | `true` | Show the settings cogwheel that lets you change the display mode, the row click behavior and the blocked-run detection directly from the card, in any mode. Set to `false` to hide it — the user will then be unable to change the view themselves, and will only see the mode set by `display_mode` (or the one already stored for them). Useful for a read-only or kiosk dashboard. |
 | `show_conditionals` | boolean | `true` | Show the collapsible list of automations that only have unpredictable (conditional) future triggers. |
 | `show_next_planned` | boolean | `true` | Show the next planned automation banner in `full` mode. |
 | `include_disabled` | boolean | `false` | Include disabled automations. |
@@ -78,6 +80,8 @@ That's it — the card automatically discovers every `automation.*` entity. Use 
 | `filter_areas` | string or list | none | Only show automations assigned to one of these areas. Accepts area IDs, names or aliases (case-insensitive). If the automation has no area of its own, the area of its device is used. |
 | `filter_labels` | string or list | none | Only show automations carrying at least one of these labels (label IDs or names). |
 | `filter_categories` | string or list | none | Only show automations in one of these automation categories (category IDs or names). |
+| `row_click` | string | `more-info` | What a click on a past run does: `more-info` opens the automation's details, `trace` opens the trace of that run. The cogwheel choice of a device takes priority over this value. |
+| `default_filters` | object or list | `done`, `error`, `running`, `planned`, `conditional` shown; `skipped` and `no_action` hidden | Statuses shown when the card is first displayed, e.g. `default_filters: {skipped: true, no_action: true}` (or a list of the statuses to show, e.g. `[done, skipped, planned]`). Status keys: `done`, `skipped`, `no_action`, `error`, `running`, `planned`, `conditional`. A choice made in the legend is remembered per device and takes priority. |
 | `show_filter_settings` | boolean | `true` | Show the area / label / category chips in the card's "Legend & filters" panel so users can change the filter from the card itself. Set to `false` to lock the dashboard on the YAML filters (kiosk / read-only dashboards). |
 
 Example with options:
@@ -133,6 +137,14 @@ filter_labels:
 - The same filters can be changed from the card itself, in the **Legend & filters** panel (area / label / category chips). That choice is remembered per card title in the browser's local storage, so each device keeps its own filter; it takes priority over the YAML values on that device until you press **Reset**. Set `show_filter_settings: false` to hide these chips and lock the card on its YAML filters.
 - Filters apply to the whole card: the timeline, the conditional list and the next-planned banner.
 - Automations that are not in the entity registry (YAML automations without an `id`) have no area, label or category, so they are hidden as soon as a filter is set.
+
+## Settings cogwheel
+
+The cogwheel next to the next-planned banner opens a small panel with three choices. They are remembered **per device** (in the browser's local storage, per card title), take priority over the YAML values on that device, and the panel is hidden when `show_compact_settings` is `false`.
+
+- **Display** — the complete timeline, a compact next-planned view, or a detailed next-planned view (same as `display_mode`).
+- **Row click** — *Automation details* (default) or *Run trace* (same as `row_click`).
+- **Blocked-run detection** — runs blocked by a condition do not change the automation's `last_triggered`, so the card polls the trace list to notice them: *Off*, *Every minute* (default) or *Every 5 minutes*. With *Off*, new runs still appear (the card watches `last_triggered`); only blocked runs wait for the next reload.
 
 ## Prediction support and limits
 
