@@ -159,6 +159,13 @@ const AUTOMATION_TIMELINE_I18N = {
     list_more: "{n} autre(s)",
     admin_required: "Cette carte a besoin d\u2019un compte administrateur pour lire les traces des automations.",
     earlier_day: "Jour pr\u00e9c\u00e9dent",
+    row_click_title: "Clic sur une ligne",
+    row_click_more_info: "Fiche de l\u2019automation",
+    row_click_trace: "Trace du run",
+    trace_poll_title: "D\u00e9tection des runs bloqu\u00e9s",
+    trace_poll_off: "D\u00e9sactiv\u00e9e",
+    trace_poll_1min: "Toutes les minutes",
+    trace_poll_5min: "Toutes les 5 minutes",
     action_preset_set: "Mode r\u00e9gl\u00e9",
     action_source_set: "Source choisie",
     action_operation_mode_set: "Mode r\u00e9gl\u00e9",
@@ -329,6 +336,13 @@ const AUTOMATION_TIMELINE_I18N = {
     list_more: "{n} more",
     admin_required: "This card needs an administrator account to read automation traces.",
     earlier_day: "Previous day",
+    row_click_title: "Row click",
+    row_click_more_info: "Automation details",
+    row_click_trace: "Run trace",
+    trace_poll_title: "Blocked-run detection",
+    trace_poll_off: "Off",
+    trace_poll_1min: "Every minute",
+    trace_poll_5min: "Every 5 minutes",
     action_preset_set: "Preset set",
     action_source_set: "Source selected",
     action_operation_mode_set: "Mode set",
@@ -383,6 +397,21 @@ class AutomationsOverviewCard extends HTMLElement {
     this._displayMode = validDisplayModes.includes(this._displayMode)
       ? this._displayMode : initialDisplayMode;
  
+    // V47 : per-device settings chosen from the cogwheel (override the YAML default).
+    this._rowClickStorageKey = `automations-overview-card.row_click.${encodeURIComponent(this.config.title)}`;
+    this._tracePollStorageKey = `automations-overview-card.trace_poll.${encodeURIComponent(this.config.title)}`;
+    let storedRowClick = null;
+    let storedTracePoll = null;
+    try {
+      storedRowClick = window.localStorage?.getItem(this._rowClickStorageKey);
+      storedTracePoll = window.localStorage?.getItem(this._tracePollStorageKey);
+    } catch (_) { /* ignore */ }
+    this._rowClick = ["trace", "more-info"].includes(storedRowClick)
+      ? storedRowClick
+      : (config.row_click === "trace" ? "trace" : "more-info");
+    this._tracePollMs = ["0", "60000", "300000"].includes(storedTracePoll) ? Number(storedTracePoll) : 60000;
+    if (this.isConnected) this._restartTracePoll();
+
     this._dayOffset = 0;
     this._loadedFor = null;
     this._filterRegistry = null;
@@ -493,21 +522,38 @@ class AutomationsOverviewCard extends HTMLElement {
           this._load();
           return;
         }
-        // V47 : runs blocked by a condition do not change last_triggered, so
-        // poll the (cheap, single) trace list to notice them.
-        this._checkNewRuns();
         // V47 : skip the full re-render when the page is hidden or when nothing
         // on screen depends on the current minute.
         if (typeof document !== "undefined" && document.hidden) return;
         if (this._hasTimeDependentContent()) this._render();
       }, 60000);
     }
+    this._restartTracePoll();
+  }
+
+  // V47 : runs blocked by a condition do not change last_triggered, so the
+  // (cheap, single) trace list is polled to notice them. The interval is a
+  // per-device setting (cogwheel): off, 1 min (default) or 5 min.
+  _restartTracePoll() {
+    if (this._tracePollTimer) {
+      clearInterval(this._tracePollTimer);
+      this._tracePollTimer = null;
+    }
+    if (!this._tracePollMs) return;
+    this._tracePollTimer = setInterval(() => {
+      if (!this._hass || this._loading) return;
+      this._checkNewRuns();
+    }, this._tracePollMs);
   }
 
   disconnectedCallback() {
     if (this._relativeTimer) {
       clearInterval(this._relativeTimer);
       this._relativeTimer = null;
+    }
+    if (this._tracePollTimer) {
+      clearInterval(this._tracePollTimer);
+      this._tracePollTimer = null;
     }
   }
  
@@ -5948,6 +5994,34 @@ class AutomationsOverviewCard extends HTMLElement {
     return html;
   }
 
+  _rowClickSelectorHtml() {
+    const options = [["more-info", "row_click_more_info"], ["trace", "row_click_trace"]];
+    return `
+      <label class="displayModeControl">
+        <span>${this._t("row_click_title")}</span>
+        <select id="rowClickSelect">
+          ${options.map(([value, label]) => `
+            <option value="${value}" ${this._rowClick === value ? "selected" : ""}>${this._t(label)}</option>
+          `).join("")}
+        </select>
+      </label>
+    `;
+  }
+
+  _tracePollSelectorHtml() {
+    const options = [[0, "trace_poll_off"], [60000, "trace_poll_1min"], [300000, "trace_poll_5min"]];
+    return `
+      <label class="displayModeControl">
+        <span>${this._t("trace_poll_title")}</span>
+        <select id="tracePollSelect">
+          ${options.map(([value, label]) => `
+            <option value="${value}" ${this._tracePollMs === value ? "selected" : ""}>${this._t(label)}</option>
+          `).join("")}
+        </select>
+      </label>
+    `;
+  }
+
   _displayModeSelectorHtml() {
     const options = [
       ["full", "display_mode_full"],
@@ -6112,7 +6186,7 @@ class AutomationsOverviewCard extends HTMLElement {
 
   _compactSettingsPanelHtml() {
     if (!this.config.show_compact_settings || !this._displayModeSettingsOpen) return "";
-    return `<div class="compactSettingsPanel">${this._displayModeSelectorHtml()}</div>`;
+    return `<div class="compactSettingsPanel">${this._displayModeSelectorHtml()}${this._rowClickSelectorHtml()}${this._tracePollSelectorHtml()}</div>`;
   }
 
   _render() {
@@ -8059,6 +8133,25 @@ class AutomationsOverviewCard extends HTMLElement {
       });
     }
 
+    const rowClickSelect = this.shadowRoot.querySelector("#rowClickSelect");
+    if (rowClickSelect) {
+      rowClickSelect.addEventListener("change", () => {
+        if (!["trace", "more-info"].includes(rowClickSelect.value)) return;
+        this._rowClick = rowClickSelect.value;
+        try { window.localStorage?.setItem(this._rowClickStorageKey, this._rowClick); } catch (_) { /* ignore */ }
+      });
+    }
+
+    const tracePollSelect = this.shadowRoot.querySelector("#tracePollSelect");
+    if (tracePollSelect) {
+      tracePollSelect.addEventListener("change", () => {
+        if (!["0", "60000", "300000"].includes(tracePollSelect.value)) return;
+        this._tracePollMs = Number(tracePollSelect.value);
+        try { window.localStorage?.setItem(this._tracePollStorageKey, String(this._tracePollMs)); } catch (_) { /* ignore */ }
+        this._restartTracePoll();
+      });
+    }
+
     const displayModeSelect = this.shadowRoot.querySelector("#displayModeSelect");
     if (displayModeSelect) {
       displayModeSelect.addEventListener("change", () => {
@@ -8093,8 +8186,8 @@ class AutomationsOverviewCard extends HTMLElement {
         button.addEventListener(
           "click",
           () => {
-            // V47 : with row_click: trace, a past run opens its own trace (default: unchanged behaviour).
-            if (button.dataset.run && button.dataset.item && this.config.row_click === "trace") {
+            // V47 : with row_click "trace" (cogwheel or YAML), a past run opens its own trace (default: automation details).
+            if (button.dataset.run && button.dataset.item && this._rowClick === "trace") {
               this._openTrace(button.dataset.item, button.dataset.run);
               return;
             }
