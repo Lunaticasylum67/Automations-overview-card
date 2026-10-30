@@ -159,10 +159,10 @@ const AUTOMATION_TIMELINE_I18N = {
     list_more: "{n} autre(s)",
     admin_required: "Cette carte a besoin d\u2019un compte administrateur pour lire les traces des automations.",
     earlier_day: "Jour pr\u00e9c\u00e9dent",
-    row_click_title: "Clic sur une ligne",
+    row_click_title: "Clic sur une ligne :",
     row_click_more_info: "Fiche de l\u2019automation",
     row_click_trace: "Trace du run",
-    trace_poll_title: "D\u00e9tection des runs bloqu\u00e9s",
+    trace_poll_title: "D\u00e9tection des runs bloqu\u00e9s :",
     trace_poll_off: "D\u00e9sactiv\u00e9e",
     trace_poll_1min: "Toutes les minutes",
     trace_poll_5min: "Toutes les 5 minutes",
@@ -336,10 +336,10 @@ const AUTOMATION_TIMELINE_I18N = {
     list_more: "{n} more",
     admin_required: "This card needs an administrator account to read automation traces.",
     earlier_day: "Previous day",
-    row_click_title: "Row click",
+    row_click_title: "Row click:",
     row_click_more_info: "Automation details",
     row_click_trace: "Run trace",
-    trace_poll_title: "Blocked-run detection",
+    trace_poll_title: "Blocked-run detection:",
     trace_poll_off: "Off",
     trace_poll_1min: "Every minute",
     trace_poll_5min: "Every 5 minutes",
@@ -6651,22 +6651,24 @@ class AutomationsOverviewCard extends HTMLElement {
         }
         .compactSettingsToggle ha-icon { --mdc-icon-size: 18px; }
         .compactSettingsPanel {
+          display: grid;
+          grid-template-columns: max-content minmax(190px, 280px);
+          align-items: center;
+          justify-content: start;
+          gap: 10px 12px;
           padding: 11px 13px;
           border-top: 1px solid var(--divider-color);
           background: var(--card-background-color);
         }
+        /* Each setting is a label cell + a select cell of the same grid, so all selects line up. */
         .displayModeControl {
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          gap: 12px;
-          margin-top: 10px;
+          display: contents;
           color: var(--primary-text-color);
           font-size: .8rem;
         }
         .displayModeControl select {
-          width: min(280px, 100%);
-          min-width: 190px;
+          width: 100%;
+          min-width: 0;
           padding: 6px 8px;
           border: 1px solid var(--divider-color);
           border-radius: 7px;
@@ -7957,8 +7959,8 @@ class AutomationsOverviewCard extends HTMLElement {
             border-left: 0;
           }
           .nextPlannedDetails section + section { border-top: 1px solid var(--divider-color); }
-          .displayModeControl { align-items: stretch; flex-direction: column; }
-          .displayModeControl select { width: 100%; min-width: 0; }
+          .compactSettingsPanel { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+          .displayModeControl select { margin-bottom: 8px; }
  
           .legendFilterRow {
  
