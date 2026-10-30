@@ -1,10 +1,10 @@
-/* Automations Overview Card - V46 - fixes #14 (focus ring around the whole next-planned banner) and #15 (no <?> glyphs in the condition tooltip); based on V45 (1.1.1) */
+/* Automations Overview Card - V47 - audit fixes: refresh on new runs, all run outcomes, all action targets, more action labels/values, persisted + configurable status filters, trigger on blocked rows, trace cache, cheaper hass updates, lighter periodic render, row opens its trace, earlier days, live blockers for unpredictable automations, admin notice; based on V46 (1.1.2) */
 // Single source of truth for the version shown in the console log and in the
 // "Legend & filters" panel — update this alongside the header comment above
 // whenever the version changes, so a user can always tell which build is
 // actually running (mismatched cached files have been the cause of more than
 // one "fix doesn't work" report).
-const CARD_VERSION = "V46";
+const CARD_VERSION = "V47";
 /* ==========================================================
    V25 - TRADUCTIONS / TRANSLATIONS
    ========================================================== */
@@ -147,7 +147,37 @@ const AUTOMATION_TIMELINE_I18N = {
     settings_title: "Filtres et réglages",
     configured_actions_note: "Actions configurées, pas encore exécutées",
     next_planned_time: "à {time}",
-    next_planned_tomorrow_time: "demain à {time}"
+    next_planned_tomorrow_time: "demain à {time}",
+    skipped_single: "Ignorée : l\u2019automation \u00e9tait d\u00e9j\u00e0 en cours (mode single)",
+    skipped_max_runs: "Ignor\u00e9e : nombre maximal d\u2019ex\u00e9cutions simultan\u00e9es atteint",
+    note_cancelled: "Interrompue par un nouveau d\u00e9clenchement (mode restart)",
+    note_aborted: "Arr\u00eat\u00e9e par une action stop",
+    blocked_now_prefix: "Bloqu\u00e9e maintenant par : ",
+    conditions_ok_now: "Conditions remplies maintenant",
+    list_and: " et ",
+    list_more: "{n} autre(s)",
+    admin_required: "Cette carte a besoin d\u2019un compte administrateur pour lire les traces des automations.",
+    earlier_day: "Jour pr\u00e9c\u00e9dent",
+    action_preset_set: "Mode r\u00e9gl\u00e9",
+    action_source_set: "Source choisie",
+    action_operation_mode_set: "Mode r\u00e9gl\u00e9",
+    action_locked: "Verrouill\u00e9",
+    action_unlocked: "D\u00e9verrouill\u00e9",
+    action_lock_opened: "Ouvert",
+    action_alarm_disarmed: "Alarme d\u00e9sactiv\u00e9e",
+    action_alarm_armed: "Alarme activ\u00e9e",
+    action_remote_on: "Activ\u00e9",
+    action_remote_off: "Mis en veille",
+    action_command_sent: "Commande envoy\u00e9e",
+    action_scene_on: "Sc\u00e8ne activ\u00e9e",
+    action_climate_on: "Chauffage/clim allum\u00e9",
+    action_climate_off: "Chauffage/clim \u00e9teint",
+    action_vacuum_start: "Aspirateur lanc\u00e9",
+    action_vacuum_dock: "Aspirateur renvoy\u00e9 \u00e0 la base",
+    action_timer_start: "Minuteur lanc\u00e9",
+    action_timer_cancel: "Minuteur annul\u00e9",
+    action_datetime_set: "Date/heure r\u00e9gl\u00e9e",
+    action_sound_mode_set: "Mode sonore r\u00e9gl\u00e9"
   },
 
   en: {
@@ -286,7 +316,37 @@ const AUTOMATION_TIMELINE_I18N = {
     settings_title: "Filters & Settings",
     configured_actions_note: "Configured actions, not yet executed",
     next_planned_time: "at {time}",
-    next_planned_tomorrow_time: "tomorrow at {time}"
+    next_planned_tomorrow_time: "tomorrow at {time}",
+    skipped_single: "Ignored: the automation was already running (single mode)",
+    skipped_max_runs: "Ignored: maximum number of parallel runs reached",
+    note_cancelled: "Interrupted by a new trigger (restart mode)",
+    note_aborted: "Stopped by a stop action",
+    blocked_now_prefix: "Currently blocked by: ",
+    conditions_ok_now: "Conditions currently met",
+    list_and: " and ",
+    list_more: "{n} more",
+    admin_required: "This card needs an administrator account to read automation traces.",
+    earlier_day: "Previous day",
+    action_preset_set: "Preset set",
+    action_source_set: "Source selected",
+    action_operation_mode_set: "Mode set",
+    action_locked: "Locked",
+    action_unlocked: "Unlocked",
+    action_lock_opened: "Opened",
+    action_alarm_disarmed: "Alarm disarmed",
+    action_alarm_armed: "Alarm armed",
+    action_remote_on: "Turned on",
+    action_remote_off: "Turned off",
+    action_command_sent: "Command sent",
+    action_scene_on: "Scene activated",
+    action_climate_on: "Climate turned on",
+    action_climate_off: "Climate turned off",
+    action_vacuum_start: "Vacuum started",
+    action_vacuum_dock: "Vacuum sent to dock",
+    action_timer_start: "Timer started",
+    action_timer_cancel: "Timer cancelled",
+    action_datetime_set: "Date/time set",
+    action_sound_mode_set: "Sound mode set"
   }
 
 };
@@ -384,6 +444,26 @@ class AutomationsOverviewCard extends HTMLElement {
       planned: true,
       conditional: true
     };
+    // V47 : default_filters (YAML) overrides the defaults; a choice made in the
+    // legend is remembered on this device, like the area/label filters.
+    if (config.default_filters && typeof config.default_filters === "object") {
+      const wanted = Array.isArray(config.default_filters)
+        ? Object.fromEntries(Object.keys(this._filters).map(key => [key, config.default_filters.includes(key)]))
+        : config.default_filters;
+      for (const key of Object.keys(this._filters)) {
+        if (typeof wanted[key] === "boolean") this._filters[key] = wanted[key];
+      }
+    }
+    this._statusFiltersStorageKey = `automations-overview-card.status_filters.${encodeURIComponent(this.config.title)}`;
+    try {
+      const stored = JSON.parse(window.localStorage?.getItem(this._statusFiltersStorageKey) || "null");
+      if (stored && typeof stored === "object") {
+        for (const key of Object.keys(this._filters)) {
+          if (typeof stored[key] === "boolean") this._filters[key] = stored[key];
+        }
+      }
+    } catch (_) { /* ignore */ }
+    this._traceCache = this._traceCache || new Map();
  
     /*
      * V15.1 :
@@ -409,9 +489,15 @@ class AutomationsOverviewCard extends HTMLElement {
         if (this._relativeDayKey && this._relativeDayKey !== dayKey) {
           this._loadedFor = null;
           this._load();
-        } else {
-          this._render();
+          return;
         }
+        // V47 : runs blocked by a condition do not change last_triggered, so
+        // poll the (cheap, single) trace list to notice them.
+        this._checkNewRuns();
+        // V47 : skip the full re-render when the page is hidden or when nothing
+        // on screen depends on the current minute.
+        if (typeof document !== "undefined" && document.hidden) return;
+        if (this._hasTimeDependentContent()) this._render();
       }, 60000);
     }
   }
@@ -426,8 +512,12 @@ class AutomationsOverviewCard extends HTMLElement {
  
   set hass(hass) {
     const inputs = this._predictionInputs(hass);
-    const inputsChanged = this._predictionInputKey !== inputs;
+    const inputsChanged = !this._sameInputs(this._predictionInputKey, inputs);
     this._predictionInputKey = inputs;
+    // V47 : a new run (last_triggered / current changes) reloads the timeline.
+    const runsKey = this._runsKey(hass);
+    const runsChanged = this._runsKeyValue !== undefined && this._runsKeyValue !== runsKey;
+    this._runsKeyValue = runsKey;
 
     // V34 : language/time_format affect only how already-loaded events are
     // rendered, never the prediction itself — so a change here should not
@@ -447,6 +537,8 @@ class AutomationsOverviewCard extends HTMLElement {
     if (this._loadedFor !== key || inputsChanged) {
       this._loadedFor = key;
       this._load();
+    } else if (runsChanged) {
+      this._scheduleRunsReload();
     } else if (displayChanged && !this._loading) {
       this._render();
     }
@@ -910,6 +1002,12 @@ class AutomationsOverviewCard extends HTMLElement {
     nextTomorrow.setDate(nextTomorrow.getDate() + 1);
 
     const automations = this._automationStates();
+
+    // V47 : traces and automation configs are admin-only in Home Assistant.
+    this._adminRequired = this._hass.user && this._hass.user.is_admin === false;
+
+    // V47 : one trace/list call for every automation instead of one per automation (fetched lazily by _readAutomation).
+    this._allTracesPromise = null;
  
     let events = [];
     let conditionals = [];
@@ -1006,11 +1104,15 @@ class AutomationsOverviewCard extends HTMLElement {
               : null;
  
  
+          const modeRefusal =
+            trace?.script_execution === "failed_single" ||
+            trace?.script_execution === "failed_max_runs";
+
           if (
             this.config.action_details &&
             (
               type === "done" ||
-              type === "skipped"
+              (type === "skipped" && !modeRefusal)
             ) &&
             trace.run_id
           ) {
@@ -1151,6 +1253,10 @@ class AutomationsOverviewCard extends HTMLElement {
                 }
               }
  
+              // V47 : say why a run ended early.
+              if (trace?.script_execution === "cancelled") detail = (detail ? detail + "\n" : "") + this._t("note_cancelled");
+              if (trace?.script_execution === "aborted") detail = (detail ? detail + "\n" : "") + this._t("note_aborted");
+
             } catch (e) {
  
               console.debug(
@@ -1179,10 +1285,18 @@ class AutomationsOverviewCard extends HTMLElement {
                 type === "done" ||
                 type === "no_action" ||
                 type === "error" ||
-                type === "running"
+                type === "running" ||
+                type === "skipped"
               )
                 ? triggerDetail
                 : null,
+
+            // V47 : lets a click open this exact run's trace.
+            run_id:
+              trace.run_id,
+
+            item_id:
+              state.attributes.id,
  
             detail,
  
@@ -1240,7 +1354,7 @@ class AutomationsOverviewCard extends HTMLElement {
                 state.entity_id,
  
               detail:
-                prediction.conditionalDetail
+                prediction.conditionalDetail + this._currentBlockersText(config)
             });
           }
         }
@@ -1350,6 +1464,15 @@ class AutomationsOverviewCard extends HTMLElement {
     }
  
  
+    const allTraces = await this._loadAllTraces();
+    if (allTraces) {
+      return {
+        state,
+        config,
+        traces: allTraces[id] || []
+      };
+    }
+
     try {
  
       const result =
@@ -1389,6 +1512,24 @@ class AutomationsOverviewCard extends HTMLElement {
  
  
   async _getTrace(
+    itemId,
+    runId
+  ) {
+    // V47 : a finished trace never changes, keep it.
+    const cacheKey = itemId + "/" + runId;
+    if (this._traceCache?.has(cacheKey)) return this._traceCache.get(cacheKey);
+    const trace = await this._hass.callWS({
+      type: "trace/get", domain: "automation", item_id: itemId, run_id: runId
+    });
+    if (trace && trace.state !== "running" && trace.timestamp?.finish) {
+      this._traceCache ||= new Map();
+      this._traceCache.set(cacheKey, trace);
+      if (this._traceCache.size > 1000) this._traceCache.delete(this._traceCache.keys().next().value);
+    }
+    return trace;
+  }
+
+  async _getTraceUncached(
     itemId,
     runId
   ) {
@@ -1439,7 +1580,10 @@ class AutomationsOverviewCard extends HTMLElement {
       trace?.script_execution ===
         "failed_conditions" ||
       trace?.state ===
-        "failed_conditions"
+        "failed_conditions" ||
+      // V47 : runs refused because of the automation mode were shown as "done".
+      trace?.script_execution === "failed_single" ||
+      trace?.script_execution === "failed_max_runs"
     ) {
  
       return "skipped";
@@ -1481,6 +1625,9 @@ class AutomationsOverviewCard extends HTMLElement {
  
       return this._t("conditions_not_met");
     }
+
+    if (trace?.script_execution === "failed_single") return this._t("skipped_single");
+    if (trace?.script_execution === "failed_max_runs") return this._t("skipped_max_runs");
  
  
     if (trace?.trigger) {
@@ -3327,12 +3474,19 @@ class AutomationsOverviewCard extends HTMLElement {
       serviceObj.data || {};
  
  
+    // V47 : list every targeted entity, not only the first one.
+    const allTargets = [...new Set([
+      ...[].concat(target.entity_id ?? []),
+      ...[].concat(serviceObj.data?.entity_id ?? [])
+    ])].filter(id => typeof id === "string" && id.includes(".") && !this._containsTemplate(id));
     let friendlyTarget =
-      targetEntity
-        ? this._entityDisplayName(
-            targetEntity
-          )
-        : null;
+      allTargets.length > 1
+        ? this._joinNames(allTargets.map(id => this._entityDisplayName(id)))
+        : targetEntity
+          ? this._entityDisplayName(
+              targetEntity
+            )
+          : null;
 
 
     /*
@@ -3456,8 +3610,42 @@ class AutomationsOverviewCard extends HTMLElement {
         this._t("action_enabled"),
  
       "homeassistant.turn_off":
-        this._t("action_disabled")
+        this._t("action_disabled"),
+
+      // V47 : more common services.
+      "light.toggle": this._t("action_toggle"),
+      "climate.set_preset_mode": this._t("action_preset_set"),
+      "climate.turn_on": this._t("action_climate_on"),
+      "climate.turn_off": this._t("action_climate_off"),
+      "water_heater.set_operation_mode": this._t("action_operation_mode_set"),
+      "water_heater.set_temperature": this._t("action_temperature_set"),
+      "fan.set_preset_mode": this._t("action_preset_set"),
+      "media_player.select_source": this._t("action_source_set"),
+      "media_player.select_sound_mode": this._t("action_sound_mode_set"),
+      "lock.lock": this._t("action_locked"),
+      "lock.unlock": this._t("action_unlocked"),
+      "lock.open": this._t("action_lock_opened"),
+      "alarm_control_panel.alarm_disarm": this._t("action_alarm_disarmed"),
+      "alarm_control_panel.alarm_arm_away": this._t("action_alarm_armed"),
+      "alarm_control_panel.alarm_arm_home": this._t("action_alarm_armed"),
+      "alarm_control_panel.alarm_arm_night": this._t("action_alarm_armed"),
+      "alarm_control_panel.alarm_arm_vacation": this._t("action_alarm_armed"),
+      "remote.turn_on": this._t("action_remote_on"),
+      "remote.turn_off": this._t("action_remote_off"),
+      "remote.send_command": this._t("action_command_sent"),
+      "scene.turn_on": this._t("action_scene_on"),
+      "vacuum.start": this._t("action_vacuum_start"),
+      "vacuum.return_to_base": this._t("action_vacuum_dock"),
+      "timer.start": this._t("action_timer_start"),
+      "timer.cancel": this._t("action_timer_cancel"),
+      "input_datetime.set_datetime": this._t("action_datetime_set")
     };
+    // notify.<anything> and script.<name> are recognizable by their domain.
+    if (!translations[service] && service.startsWith("notify.")) translations[service] = this._t("action_notify_sent");
+    if (!translations[service] && service.startsWith("script.") && service !== "script.turn_on") {
+      translations[service] = this._t("action_script_started");
+      if (!friendlyTarget) friendlyTarget = this._entityDisplayName(service);
+    }
  
  
     const actionLabel =
@@ -3487,6 +3675,13 @@ class AutomationsOverviewCard extends HTMLElement {
       value =
         data.option;
     }
+
+    // V47 : values that were not shown before.
+    else if (data.preset_mode !== undefined) value = data.preset_mode;
+    else if (data.hvac_mode !== undefined) value = data.hvac_mode;
+    else if (data.operation_mode !== undefined) value = data.operation_mode;
+    else if (data.source !== undefined) value = data.source;
+    else if (data.sound_mode !== undefined) value = data.sound_mode;
  
  
     else if (
@@ -3541,8 +3736,9 @@ class AutomationsOverviewCard extends HTMLElement {
       value =
         data.temperature;
  
+      // V47 : follow the HA unit system instead of a hard-coded °C.
       suffix =
-        " °C";
+        " " + (this._hass?.config?.unit_system?.temperature || "°C");
     }
  
  
@@ -3615,6 +3811,13 @@ class AutomationsOverviewCard extends HTMLElement {
    * Cela évite d'avoir à réécrire l'échappement HTML dans
    * chaque fonction qui construit une chaîne de detail.
    */
+  _joinNames(names, max = 3) {
+    const shown = names.slice(0, max);
+    const rest = names.length - shown.length;
+    if (rest > 0) return shown.join(", ") + this._t("list_and") + this._t("list_more", { n: rest });
+    return shown.length > 1 ? shown.slice(0, -1).join(", ") + this._t("list_and") + shown[shown.length - 1] : shown[0];
+  }
+
   _highlightEntity(name) {
  
     if (
@@ -3995,13 +4198,62 @@ class AutomationsOverviewCard extends HTMLElement {
     }
   }
 
+  // V47 : returns a structured signature instead of one big JSON string; it is
+  // compared by _sameInputs(), which only serializes an entity whose state
+  // object actually changed (HA replaces the object on every change).
   _predictionInputs(hass) {
-    return JSON.stringify([
-      hass.config?.time_zone, hass.config?.latitude, hass.config?.longitude, hass.config?.elevation,
-      hass.states["sun.sun"]?.state, hass.states["sun.sun"]?.attributes?.next_dusk,
-      [...new Set([...Object.keys(hass.states).filter(id => /^(input_boolean|schedule|timer)\./.test(id)), ...(this._conditionEntities || []), ...(this._pendingConditionEntities || [])])]
-        .sort().map(id => [id, hass.states[id]?.state, hass.states[id]?.attributes])
-    ]);
+    const ids = [...new Set([...Object.keys(hass.states).filter(id => /^(input_boolean|schedule|timer)\./.test(id)), ...(this._conditionEntities || []), ...(this._pendingConditionEntities || [])])].sort();
+    return {
+      head: JSON.stringify([
+        hass.config?.time_zone, hass.config?.latitude, hass.config?.longitude, hass.config?.elevation,
+        hass.states["sun.sun"]?.state, hass.states["sun.sun"]?.attributes?.next_dusk
+      ]),
+      ids,
+      objs: ids.map(id => hass.states[id])
+    };
+  }
+
+  _sameInputs(a, b) {
+    if (!a || !b || a.head !== b.head || a.ids.length !== b.ids.length) return false;
+    for (let i = 0; i < a.ids.length; i++) {
+      if (a.ids[i] !== b.ids[i]) return false;
+      const x = a.objs[i], y = b.objs[i];
+      if (x === y) continue;
+      if (!x || !y || x.state !== y.state || JSON.stringify(x.attributes) !== JSON.stringify(y.attributes)) return false;
+    }
+    return true;
+  }
+
+  _runsKey(hass) {
+    let key = "";
+    for (const [id, state] of Object.entries(hass.states)) {
+      if (id.startsWith("automation.")) key += id + "|" + (state.attributes?.last_triggered || "") + "|" + (state.attributes?.current || 0) + ";";
+    }
+    return key;
+  }
+
+  _scheduleRunsReload() {
+    clearTimeout(this._runsTimer);
+    this._runsTimer = setTimeout(() => {
+      this._loadedFor = null;
+      this._load();
+    }, 2000);
+  }
+
+  async _checkNewRuns() {
+    if (!this._hass || this._dayOffset > 0) return;
+    try {
+      const list = await this._hass.callWS({ type: "trace/list", domain: "automation" });
+      const key = (Array.isArray(list) ? list : []).map(trace => trace.run_id + ":" + (trace.state || "")).sort().join(",");
+      if (this._traceListKey !== undefined && this._traceListKey !== key) this._scheduleRunsReload();
+      this._traceListKey = key;
+    } catch (_) { /* not admin or traces unavailable */ }
+  }
+
+  _hasTimeDependentContent() {
+    if (this._nextPlanned || this._displayMode !== "full") return true;
+    const now = new Date();
+    return (this._events || []).some(ev => ev.type === "planned" && ev.time <= now);
   }
 
   _scheduleDays() {
@@ -4365,6 +4617,29 @@ class AutomationsOverviewCard extends HTMLElement {
     const behavior = native ? condition.options?.behavior || "all" : condition.match || "all";
     if (!["all", "any"].includes(behavior)) return "uncertain";
     return this._combineVerdicts(values, behavior === "any" ? "or" : "and");
+  }
+
+  // V47 : for automations whose trigger cannot be predicted, say whether their
+  // top-level conditions would currently let them run.
+  _currentBlockersText(config) {
+    const conditions = [].concat(config.conditions ?? config.condition ?? []);
+    if (!conditions.length) return "";
+    const now = new Date();
+    const blocked = [];
+    let uncertain = false;
+    for (const condition of conditions) {
+      const verdict = this._oneConditionVerdict(condition, now, undefined);
+      if (verdict === "blocked") {
+        const label = condition?.alias ||
+          this._plannedConditionSummaries({ conditions: [condition] }).map(item => item.text).join(" · ") ||
+          this._t("configured_condition");
+        blocked.push(label);
+      } else if (verdict === "uncertain") {
+        uncertain = true;
+      }
+    }
+    if (blocked.length) return "\n" + this._t("blocked_now_prefix") + blocked.join(" · ");
+    return uncertain ? "" : "\n" + this._t("conditions_ok_now");
   }
 
   _predict(config, date, state) {
@@ -5218,7 +5493,10 @@ class AutomationsOverviewCard extends HTMLElement {
       ) {
  
         previous.count += 1;
- 
+        if (event.run_id) {
+          previous.run_id = event.run_id;
+          previous.item_id = event.item_id;
+        }
         continue;
       }
  
@@ -5298,6 +5576,8 @@ class AutomationsOverviewCard extends HTMLElement {
  
     this._filters[type] =
       !this._filters[type];
+    try { window.localStorage?.setItem(this._statusFiltersStorageKey, JSON.stringify(this._filters)); } catch (_) { /* ignore */ }
+
  
  
     this._render();
@@ -5367,6 +5647,30 @@ class AutomationsOverviewCard extends HTMLElement {
      NAVIGATION
      ========================================================== */
  
+  _loadAllTraces() {
+    if (!this._allTracesPromise) {
+      this._allTracesPromise = (async () => {
+        try {
+          const all = await this._hass.callWS({ type: "trace/list", domain: "automation" });
+          if (!Array.isArray(all)) return null;
+          const byItem = {};
+          for (const trace of all) (byItem[trace.item_id] ||= []).push(trace);
+          this._traceListKey = all.map(trace => trace.run_id + ":" + (trace.state || "")).sort().join(",");
+          return byItem;
+        } catch (_) {
+          return null;
+        }
+      })();
+    }
+    return this._allTracesPromise;
+  }
+
+  _openTrace(itemId, runId) {
+    const path = `/config/automation/trace/${encodeURIComponent(itemId)}?run_id=${encodeURIComponent(runId)}`;
+    window.history.pushState(null, "", path);
+    window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: false } }));
+  }
+
   _openAutomation(
     entityId
   ) {
@@ -6311,9 +6615,8 @@ class AutomationsOverviewCard extends HTMLElement {
  
         .tabs {
           display: grid;
- 
           grid-template-columns:
-            1fr 1fr 1fr;
+            auto 1fr 1fr 1fr;
  
           gap: 8px;
  
@@ -7650,7 +7953,7 @@ class AutomationsOverviewCard extends HTMLElement {
  
  
           <div class="tabs">
- 
+            <button class="tab earlier ${this._dayOffset < -1 ? "active" : ""}" data-day="${Math.max(-30, Math.min(this._dayOffset, -1) - 1)}" title="${this._esc(this._t("earlier_day"))}" aria-label="${this._esc(this._t("earlier_day"))}">‹</button>
             ${this._dayButton(
               -1,
               this._t("day_yesterday")
@@ -7680,8 +7983,12 @@ class AutomationsOverviewCard extends HTMLElement {
  
  
           ${
+            this._adminRequired && !this._loading
+              ? `<div class="empty">${this._t("admin_required")}</div>`
+              : ""
+          }
+          ${
             this._loading
- 
               ? `
                 <div class="loading">
                   <ha-icon class="loadingIcon" icon="mdi:timer-sand"></ha-icon>
@@ -7794,7 +8101,11 @@ class AutomationsOverviewCard extends HTMLElement {
         button.addEventListener(
           "click",
           () => {
- 
+            // V47 : a past run opens its own trace (row_click: more-info keeps the old behaviour).
+            if (button.dataset.run && button.dataset.item && this.config.row_click !== "more-info") {
+              this._openTrace(button.dataset.item, button.dataset.run);
+              return;
+            }
             this._openAutomation(
               button.dataset.entity
             );
@@ -7997,6 +8308,7 @@ class AutomationsOverviewCard extends HTMLElement {
         data-entity="${this._esc(
           ev.entity_id
         )}"
+        ${ev.run_id && ev.item_id ? `data-run="${this._esc(ev.run_id)}" data-item="${this._esc(ev.item_id)}"` : ""}
       >
  
         <span class="time">
