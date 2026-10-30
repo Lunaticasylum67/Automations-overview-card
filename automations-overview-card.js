@@ -6655,7 +6655,7 @@ class AutomationsOverviewCard extends HTMLElement {
           grid-template-columns: max-content minmax(190px, 280px);
           align-items: center;
           justify-content: start;
-          gap: 10px 12px;
+          gap: 12px 8px;
           padding: 11px 13px;
           border-top: 1px solid var(--divider-color);
           background: var(--card-background-color);
@@ -6664,11 +6664,13 @@ class AutomationsOverviewCard extends HTMLElement {
         .displayModeControl {
           display: contents;
           color: var(--primary-text-color);
-          font-size: .8rem;
+          font-size: 1rem;
         }
+        .displayModeControl span { text-align: right; }
         .displayModeControl select {
           width: 100%;
           min-width: 0;
+          font: inherit;
           padding: 6px 8px;
           border: 1px solid var(--divider-color);
           border-radius: 7px;
@@ -7960,6 +7962,7 @@ class AutomationsOverviewCard extends HTMLElement {
           }
           .nextPlannedDetails section + section { border-top: 1px solid var(--divider-color); }
           .compactSettingsPanel { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+          .displayModeControl span { text-align: left; }
           .displayModeControl select { margin-bottom: 8px; }
  
           .legendFilterRow {
